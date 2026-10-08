@@ -7,8 +7,10 @@
         mc:Ignorable="d"
         Title="MainWindow" Height="700" Width="1000"
         ResizeMode="NoResize">
-    <Grid>
-        <Image Name="img" Source="{Binding}">
+    <Grid Height="700" Width="1000" x:Name="grid">
+        <Image Source="{Binding}">
         </Image>
+        <Canvas>
+        </Canvas>
     </Grid>
 </Window>

@@ -24,13 +24,14 @@ namespace GK1_1
         public MainWindow()
         {
             InitializeComponent();
-            img.Loaded += Setup;
+            Loaded += Setup;
             
         }
 
         public void Setup(object sender,RoutedEventArgs args)
         {
-            bmp = new WriteableBitmap((int)ActualWidth, (int)ActualHeight, 96, 96, PixelFormats.Bgr32, null);
+
+            bmp = new WriteableBitmap((int)Width, (int)Height, 96, 96, PixelFormats.Bgr32, null);
             DataContext = bmp;
             MouseLeftButtonDown += Test;
         }
@@ -39,8 +40,8 @@ namespace GK1_1
 
             for(int i = 0; i < 100; i++)
             {
-                int column = i+5;
-                int row = i+10;
+                int column = i;
+                int row = i;
 
                 try
                 {
@@ -54,7 +55,7 @@ namespace GK1_1
 
                         // Find the address of the pixel to draw.
                         pBackBuffer += row * bmp.BackBufferStride;
-                        pBackBuffer += column * 4;
+                        pBackBuffer += 50 * 4;
 
                         // Compute the pixel's color.
                         int color_data = 255 << 16; // R
@@ -66,7 +67,7 @@ namespace GK1_1
                     }
 
                     // Specify the area of the bitmap that changed.
-                    bmp.AddDirtyRect(new Int32Rect(column, row, 1, 1));
+                    bmp.AddDirtyRect(new Int32Rect(50, row, 1, 1));
                 }
                 finally
                 {
