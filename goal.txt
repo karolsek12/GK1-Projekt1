@@ -1,7 +1,3 @@
 goal:
 
-struktury
-wielokąty dwa
-usuwanie wierzcholkow
-subdywizja
 alg rysowania i szybki switch

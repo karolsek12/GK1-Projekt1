@@ -4,13 +4,82 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:GK1_1"
+        xmlns:converters ="clr-namespace:GK1_1.Converters"
         mc:Ignorable="d"
         Title="MainWindow" Height="700" Width="1000"
         ResizeMode="NoResize">
+
+    <Window.Resources>
+        <converters:AddValueConverter x:Key="AddValueConverter"/>
+    </Window.Resources>
+    
     <Grid Height="700" Width="1000" x:Name="grid">
-        <Image Source="{Binding}">
+        <Image Source="{Binding BMP}">
         </Image>
-        <Canvas>
-        </Canvas>
+        <ItemsControl Name="canvas" ItemsSource="{Binding Shapes}">
+
+            <ItemsControl.ItemTemplate>
+                    <DataTemplate>
+
+                    <Grid>
+                        <ItemsControl ItemsSource="{Binding Edges}">
+
+
+                            <ItemsControl.ItemsPanel>
+                                <ItemsPanelTemplate>
+                                    <Canvas/>
+                                </ItemsPanelTemplate>
+                            </ItemsControl.ItemsPanel>
+
+
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <Grid>
+                                        <Line 
+                                            X1="{Binding P1.X}" 
+                                            Y1="{Binding P1.Y}"
+                                            X2="{Binding P2.X}"
+                                            Y2="{Binding P2.Y}"
+                                            Stroke="LightBlue"
+                                        
+                                            ></Line>
+                                    </Grid>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+
+                        <ItemsControl ItemsSource="{Binding Vertices}">
+
+
+                            <ItemsControl.ItemsPanel>
+                                <ItemsPanelTemplate>
+                                    <Canvas/>
+                                </ItemsPanelTemplate>
+                            </ItemsControl.ItemsPanel>
+
+
+                            <ItemsControl.ItemContainerStyle>
+                                <Style TargetType="ContentPresenter">
+                                    <Setter Property="Canvas.Left" Value="{Binding Path=X, Converter={StaticResource AddValueConverter},
+                   ConverterParameter=-5}" />
+                                    <Setter Property="Canvas.Top" Value="{Binding Path=Y, Converter={StaticResource AddValueConverter},
+                   ConverterParameter=-5}" />
+                                </Style>
+                            </ItemsControl.ItemContainerStyle>
+
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <Ellipse Height="10" Width="10" Stroke="LightBlue" Fill="LightBlue"></Ellipse>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+
+
+                    </Grid>
+                </DataTemplate>
+                </ItemsControl.ItemTemplate>
+                
+            </ItemsControl>
+            
     </Grid>
 </Window>
