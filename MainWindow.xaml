@@ -6,36 +6,43 @@
         xmlns:local="clr-namespace:GK1_1"
         xmlns:converters ="clr-namespace:GK1_1.Converters"
         mc:Ignorable="d"
-        Title="MainWindow" Height="700" Width="1000"
+        Title="MainWindow" Height="750" Width="1000"
         ResizeMode="NoResize">
 
     <Window.Resources>
         <converters:AddValueConverter x:Key="AddValueConverter"/>
     </Window.Resources>
-    
-    <Grid Height="700" Width="1000" x:Name="grid">
-        <Image Source="{Binding BMP}">
-        </Image>
-        <ItemsControl Name="canvas" ItemsSource="{Binding Shapes}">
+    <StackPanel>
 
-            <ItemsControl.ItemTemplate>
+        <StackPanel Width="1000" Height="50" Orientation="Horizontal">
+            <RadioButton  GroupName="Drawing" IsChecked="True"  VerticalContentAlignment="Center"></RadioButton>
+            <Label Content="Library" VerticalContentAlignment="Center"></Label>
+            <RadioButton  GroupName="Drawing"  VerticalContentAlignment="Center"></RadioButton>
+            <Label Content="Bresenham" VerticalContentAlignment="Center"></Label>
+        </StackPanel>
+        <Grid Width="1000" Height="700" x:Name="grid">
+            <Image Source="{Binding BMP}">
+            </Image>
+            <ItemsControl Name="canvas" ItemsSource="{Binding Shapes}">
+
+                <ItemsControl.ItemTemplate>
                     <DataTemplate>
 
-                    <Grid>
-                        <ItemsControl ItemsSource="{Binding Edges}">
+                        <Grid>
+                            <ItemsControl ItemsSource="{Binding Edges}">
 
 
-                            <ItemsControl.ItemsPanel>
-                                <ItemsPanelTemplate>
-                                    <Canvas/>
-                                </ItemsPanelTemplate>
-                            </ItemsControl.ItemsPanel>
+                                <ItemsControl.ItemsPanel>
+                                    <ItemsPanelTemplate>
+                                        <Canvas/>
+                                    </ItemsPanelTemplate>
+                                </ItemsControl.ItemsPanel>
 
 
-                            <ItemsControl.ItemTemplate>
-                                <DataTemplate>
-                                    <Grid>
-                                        <Line 
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate>
+                                        <Grid>
+                                            <Line 
                                             X1="{Binding P1.X}" 
                                             Y1="{Binding P1.Y}"
                                             X2="{Binding P2.X}"
@@ -43,43 +50,44 @@
                                             Stroke="LightBlue"
                                         
                                             ></Line>
-                                    </Grid>
-                                </DataTemplate>
-                            </ItemsControl.ItemTemplate>
-                        </ItemsControl>
+                                        </Grid>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
 
-                        <ItemsControl ItemsSource="{Binding Vertices}">
-
-
-                            <ItemsControl.ItemsPanel>
-                                <ItemsPanelTemplate>
-                                    <Canvas/>
-                                </ItemsPanelTemplate>
-                            </ItemsControl.ItemsPanel>
+                            <ItemsControl ItemsSource="{Binding Vertices}">
 
 
-                            <ItemsControl.ItemContainerStyle>
-                                <Style TargetType="ContentPresenter">
-                                    <Setter Property="Canvas.Left" Value="{Binding Path=X, Converter={StaticResource AddValueConverter},
+                                <ItemsControl.ItemsPanel>
+                                    <ItemsPanelTemplate>
+                                        <Canvas/>
+                                    </ItemsPanelTemplate>
+                                </ItemsControl.ItemsPanel>
+
+
+                                <ItemsControl.ItemContainerStyle>
+                                    <Style TargetType="ContentPresenter">
+                                        <Setter Property="Canvas.Left" Value="{Binding Path=X, Converter={StaticResource AddValueConverter},
                    ConverterParameter=-5}" />
-                                    <Setter Property="Canvas.Top" Value="{Binding Path=Y, Converter={StaticResource AddValueConverter},
+                                        <Setter Property="Canvas.Top" Value="{Binding Path=Y, Converter={StaticResource AddValueConverter},
                    ConverterParameter=-5}" />
-                                </Style>
-                            </ItemsControl.ItemContainerStyle>
+                                    </Style>
+                                </ItemsControl.ItemContainerStyle>
 
-                            <ItemsControl.ItemTemplate>
-                                <DataTemplate>
-                                    <Ellipse Height="10" Width="10" Stroke="LightBlue" Fill="LightBlue"></Ellipse>
-                                </DataTemplate>
-                            </ItemsControl.ItemTemplate>
-                        </ItemsControl>
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate>
+                                        <Ellipse Height="10" Width="10" Stroke="LightBlue" Fill="LightBlue"></Ellipse>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
 
 
-                    </Grid>
-                </DataTemplate>
+                        </Grid>
+                    </DataTemplate>
                 </ItemsControl.ItemTemplate>
-                
+
             </ItemsControl>
-            
-    </Grid>
+
+        </Grid>
+    </StackPanel>
 </Window>

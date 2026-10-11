@@ -85,7 +85,7 @@ namespace GK1_1
         public void Setup(object sender,RoutedEventArgs args)
         {
 
-            _bmp = new WriteableBitmap((int)Width, (int)Height, 96, 96, PixelFormats.Bgr32, null);
+            _bmp = new WriteableBitmap((int)grid.Width, (int)grid.Height, 96, 96, PixelFormats.Bgr32, null);
             DataContext = this;
             grid.MouseLeftButtonDown += ClickedLeftDown;
             grid.MouseLeftButtonUp += ClickedLeftUp;
