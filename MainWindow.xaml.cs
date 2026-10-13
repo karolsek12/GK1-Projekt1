@@ -25,9 +25,11 @@ namespace GK1_1
         private Vertex? _held;
         private (Vertex,Shape)? _markedVertex;
         private (Edge, Shape)? _markedEdge;
+        private ViewModel _viewModel;
 
         private ContextMenu _rightClickVertexMenu;
         private ContextMenu _rightClickEdgeMenu;
+
 
         public WriteableBitmap BMP
         {
@@ -42,6 +44,14 @@ namespace GK1_1
             get 
             { 
                 return _shapes; 
+            }
+        }
+
+        public ViewModel ViewModel
+        {
+            get
+            {
+                return _viewModel;
             }
         }
 
@@ -63,6 +73,7 @@ namespace GK1_1
             subdivideEdge.Click += SubdivideEdge_Click;
             _rightClickEdgeMenu.Items.Add(subdivideEdge);
 
+            _viewModel = new ViewModel();
 
             Loaded += Setup;
             

@@ -1,3 +1,6 @@
-goal:
+goal przed weekendem:
 
-alg rysowania i szybki switch
+bresenham
+movement calego wielokatu
+łuki
+clean up architektury

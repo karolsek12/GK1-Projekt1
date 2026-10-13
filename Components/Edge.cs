@@ -9,11 +9,13 @@ using System.Threading.Tasks;
 
 namespace GK1_1.Components
 {
+
     public class Edge : SuperNotifyChanged
     {
 
         private Vertex _p1;
         private Vertex _p2;
+        private List<Point> _pixels;
 
         public Vertex P1
         {

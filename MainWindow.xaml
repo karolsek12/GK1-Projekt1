@@ -11,17 +11,19 @@
 
     <Window.Resources>
         <converters:AddValueConverter x:Key="AddValueConverter"/>
+        <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter"/>
     </Window.Resources>
     <StackPanel>
 
         <StackPanel Width="1000" Height="50" Orientation="Horizontal">
-            <RadioButton  GroupName="Drawing" IsChecked="True"  VerticalContentAlignment="Center"></RadioButton>
+            <RadioButton IsChecked="{Binding Path=ViewModel.Library, Mode=TwoWay}" GroupName="Drawing"  VerticalContentAlignment="Center"></RadioButton>
             <Label Content="Library" VerticalContentAlignment="Center"></Label>
-            <RadioButton  GroupName="Drawing"  VerticalContentAlignment="Center"></RadioButton>
+            <RadioButton IsChecked="{Binding Path=ViewModel.Bresenham, Mode=TwoWay}" GroupName="Drawing"  VerticalContentAlignment="Center"></RadioButton>
             <Label Content="Bresenham" VerticalContentAlignment="Center"></Label>
         </StackPanel>
         <Grid Width="1000" Height="700" x:Name="grid">
-            <Image Source="{Binding BMP}">
+            <Image Source="{Binding BMP}" Visibility="{Binding Path=ViewModel.Bresenham ,
+                    Converter={StaticResource BooleanToVisibilityConverter}}">
             </Image>
             <ItemsControl Name="canvas" ItemsSource="{Binding Shapes}">
 
@@ -48,7 +50,9 @@
                                             X2="{Binding P2.X}"
                                             Y2="{Binding P2.Y}"
                                             Stroke="LightBlue"
-                                        
+                                            Visibility="{Binding RelativeSource={RelativeSource FindAncestor, 
+AncestorType={x:Type Window}}, Path=ViewModel.Library ,
+                    Converter={StaticResource BooleanToVisibilityConverter}}"
                                             ></Line>
                                         </Grid>
                                     </DataTemplate>
