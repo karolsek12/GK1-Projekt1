@@ -56,29 +56,28 @@ namespace GK1_1
             return null;
         }
 
-        public static bool IsNearLine(Vertex A, Vertex B, int x, int y)
+        public static bool IsNearLine(Point A, Point B, int x, int y)
         {
-            if (A.X > B.X)
+            Point clicked = new Point(x, y);
+
+            if (A.x > B.x)
                 return IsNearLine(B, A, x,y);
 
-            double xDif = B.X - A.X;
-            double yDif = B.Y - A.Y;
+            double xDif = B.x - A.x;
+            double yDif = B.y - A.y;
 
             double alpha = Math.Atan2(yDif, xDif);
 
-            double cos = Math.Cos(alpha);
-            double sin = Math.Sin(alpha);
+            Vector ab = new Vector(B,A);
+            Vector ax = new Vector(clicked, A);
 
-            Vertex ab = new Vertex(B.X - A.X, B.Y - A.Y);
-            Vertex ax = new Vertex(x - A.X,y-A.Y);
+            Vector rotB = ab.GetRotated(alpha);
 
-            Vertex rotB = new Vertex((int)(cos * ab.X + sin * ab.Y), (int)(-sin * ab.X + cos * ab.Y));
+            Vector rotX = ax.GetRotated(alpha);
 
-            Vertex rotX = new Vertex((int)(cos * ax.X + sin * ax.Y), (int)(-sin * ax.X + cos * ax.Y));
+            bool checkX = rotX.x >= 0 && rotX.x <= rotB.x;
 
-            bool checkX = rotX.X >= 0 && rotX.X <= rotB.X;
-
-            bool checkY = rotX.Y >= -EdgeEpsilon && rotX.Y <= EdgeEpsilon;
+            bool checkY = rotX.y >= -EdgeEpsilon && rotX.y <= EdgeEpsilon;
 
             return (checkX && checkY);
 

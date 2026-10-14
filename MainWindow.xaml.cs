@@ -10,6 +10,8 @@ using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using GK1_1.Components;
 
+using WinPoint = System.Windows.Point;
+
 namespace GK1_1
 {
     /// <summary>
@@ -106,7 +108,7 @@ namespace GK1_1
 
         public void ClickedLeftDown(object sender, MouseButtonEventArgs args)
         {
-            Point p = args.GetPosition(grid);
+            WinPoint p = args.GetPosition(grid);
             Shape? shape;
 
             _held = HitDetection.CheckPointHit(_shapes.ToList(), (int)p.X, (int)p.Y,out shape);
@@ -117,7 +119,7 @@ namespace GK1_1
         {
             if (_held == null)
                 return;
-            Point p = args.GetPosition(grid);
+            WinPoint p = args.GetPosition(grid);
 
             _held.X = (int)p.X;
             _held.Y = (int)p.Y;
@@ -130,7 +132,7 @@ namespace GK1_1
 
         public void ClickedRightDown(object sender, MouseButtonEventArgs args)
         {
-            Point p = args.GetPosition(grid);
+            WinPoint p = args.GetPosition(grid);
             Shape? shape;
             MenuItem item;
 

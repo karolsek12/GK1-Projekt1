@@ -45,11 +45,12 @@ namespace GK1_1.Components
         {
             _p1 = p1;
             _p2 = p2;
+            _pixels = new List<Point>();
         }
 
         public bool CheckHit(int x, int y)
         {
-            return HitDetection.IsNearLine(P1, P2, x, y);
+            return HitDetection.IsNearLine(new Point(P1), new Point(P2), x, y);
         }
 
     }
