@@ -41,16 +41,48 @@ namespace GK1_1.Components
             }
         }
 
+        public List<Point> Pixels
+        {
+            get
+            {
+                return _pixels;
+            }
+        }
+
         public Edge(Vertex p1, Vertex p2)
         {
             _p1 = p1;
             _p2 = p2;
-            _pixels = new List<Point>();
+            _pixels = Rasterization.Bresenham(new Point(P1), new Point(P2));
         }
 
         public bool CheckHit(int x, int y)
         {
             return HitDetection.IsNearLine(new Point(P1), new Point(P2), x, y);
+        }
+
+        public bool CheckContainsPoint(Point p)
+        {
+            if (_p1.X == p.x && _p1.Y == p.y)
+                return true;
+
+            if (_p2.X == p.x && _p2.Y == p.y)
+                return true;
+
+            return false;
+        }
+
+        public (List<Point>,List<Point>) GetPoints()
+        {
+            List<Point> older = new List<Point>();
+            foreach (Point p in _pixels)
+            {
+                older.Add(p);
+            }
+
+            _pixels = Rasterization.Bresenham(new Point(P1), new Point(P2));
+
+            return (older, _pixels);
         }
 
     }

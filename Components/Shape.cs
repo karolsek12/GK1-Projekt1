@@ -55,7 +55,7 @@ namespace GK1_1.Components
             return new Edge(e1.P1, e2.P2);
         }
 
-        public void EraseVertex(Vertex vertex)
+        public (List<Point>, List<Point>) EraseVertex(Vertex vertex)
         {
             List<Edge> toConnect = new List<Edge>();
 
@@ -67,9 +67,6 @@ namespace GK1_1.Components
                     toConnect.Add(edge);
             }
 
-            if (toConnect.Count == 0)
-                return;
-
             if (toConnect.Count != 2)
                 throw new Exception("Impossible, something horrible happened!!!");
 
@@ -77,11 +74,31 @@ namespace GK1_1.Components
             {
                 _edges.Remove(edge);
             }
+            Edge newest = ConnectEdges(toConnect[0], toConnect[1]);
 
-            _edges.Add(ConnectEdges(toConnect[0], toConnect[1]));
+            _edges.Add(newest);
+
+            List<Point> older = new List<Point>();
+            List<Point> newer = new List<Point>();
+
+            foreach(Point p in newest.Pixels)
+            {
+                newer.Add(p);
+            }
+
+            for(int i = 0; i < 2; i++)
+            {
+                foreach(Point p in toConnect[i].Pixels)
+                {
+                    older.Add(p);
+                }
+            }
+
+
+            return (older,newer);
         }
         
-        public void SubdivideEdge(Edge edge)
+        public (List<Point>, List<Point>) SubdivideEdge(Edge edge)
         {
             int midX = edge.P1.X + edge.P2.X;
             midX /= 2;
@@ -100,8 +117,52 @@ namespace GK1_1.Components
 
             _vertices.Add(midPoint);
 
+            List<Point> older = new List<Point>();
+            List<Point> newer = new List<Point>();
+
+            foreach (Point p in e1.Pixels)
+            {
+                newer.Add(p);
+            }
+
+            foreach (Point p in e2.Pixels)
+            {
+                newer.Add(p);
+            }
+
+            foreach (Point p in edge.Pixels)
+            {
+                older.Add(p);
+            }
+
+            return (older, newer);
         }
 
+        public (List<Point>,List<Point>) UpdateEdges(Point p)
+        {
+            List<Point> older = new List<Point>();
+            List<Point> newer = new List<Point>();
+
+            foreach(Edge e in _edges)
+            {
+                if (e.CheckContainsPoint(p))
+                {
+                    (List<Point> o,List<Point> n) = e.GetPoints();
+
+                    foreach(Point pp in o)
+                    {
+                        older.Add(pp);
+                    }
+
+                    foreach(Point pp in n)
+                    {
+                        newer.Add(pp);
+                    }
+                }
+            }
+
+            return (older, newer);  
+        }
 
     }
 }

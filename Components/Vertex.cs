@@ -44,5 +44,11 @@ namespace GK1_1.Components
             _y = y;
         }
 
+        public void UpdatePosition(int x, int y)
+        {
+            X = x;
+            Y = y;
+        }
+
     }
 }

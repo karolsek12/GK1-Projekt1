@@ -49,7 +49,7 @@
                                             Y1="{Binding P1.Y}"
                                             X2="{Binding P2.X}"
                                             Y2="{Binding P2.Y}"
-                                            Stroke="LightBlue"
+                                            Stroke="Black"
                                             Visibility="{Binding RelativeSource={RelativeSource FindAncestor, 
 AncestorType={x:Type Window}}, Path=ViewModel.Library ,
                     Converter={StaticResource BooleanToVisibilityConverter}}"
@@ -80,7 +80,7 @@ AncestorType={x:Type Window}}, Path=ViewModel.Library ,
 
                                 <ItemsControl.ItemTemplate>
                                     <DataTemplate>
-                                        <Ellipse Height="10" Width="10" Stroke="LightBlue" Fill="LightBlue"></Ellipse>
+                                        <Ellipse Height="10" Width="10" Stroke="Black" Fill="White"></Ellipse>
                                     </DataTemplate>
                                 </ItemsControl.ItemTemplate>
                             </ItemsControl>

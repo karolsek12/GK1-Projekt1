@@ -12,13 +12,26 @@ namespace GK1_1
     {
         public static List<Point> Bresenham(Point A, Point B)
         {
+
             if (A.x > B.x)// guarantee that B will be after A
                 return Bresenham(B, A);
 
-            if(A.y > B.y) // guarantee that m>0
+            if (A.y == B.y)
+            {
+                List<Point> straight = new List<Point>();
+
+                for (int i = A.x;i<= B.x; i++)
+                {
+                    straight.Add(new Point(i, A.y));
+                }
+                return straight;
+
+            }
+
+            if (A.y > B.y) // guarantee that m>0
                 return FlipY(Bresenham(FlipY(A), FlipY(B)));
 
-            if(B.y -  A.y > A.x - B.x) // guaranteee that m<1
+            if(B.y -  A.y > B.x-A.x) // guaranteee that m<1
                 return FlipXY(Bresenham(FlipXY(A), FlipXY(B)));
 
             List<Point> list = new List<Point>();

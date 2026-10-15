@@ -1,4 +1,6 @@
 ﻿using System.Collections.ObjectModel;
+using System.Diagnostics;
+using System.Drawing;
 using System.Text;
 using System.Windows;
 using System.Windows.Controls;
@@ -9,7 +11,7 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using GK1_1.Components;
-
+using MyPoint = GK1_1.Components.Point;
 using WinPoint = System.Windows.Point;
 
 namespace GK1_1
@@ -22,9 +24,9 @@ namespace GK1_1
     
     public partial class MainWindow : Window
     {
-        private WriteableBitmap _bmp;
+        private BitmapHandler _bmpHandler;
         private ObservableCollection<Shape> _shapes;
-        private Vertex? _held;
+        private (Vertex,Shape)? _held;
         private (Vertex,Shape)? _markedVertex;
         private (Edge, Shape)? _markedEdge;
         private ViewModel _viewModel;
@@ -37,7 +39,7 @@ namespace GK1_1
         {
             get
             {
-                return _bmp;
+                return _bmpHandler.BMP;
             }
         }
 
@@ -60,7 +62,7 @@ namespace GK1_1
         public MainWindow()
         {
             InitializeComponent();
-            _bmp = null!;
+            _bmpHandler = null!;
             _held = null;
             _shapes = new ObservableCollection<Shape>();
             _shapes.Add(ShapeInit.Square(new Vertex(50, 50), 50));
@@ -84,21 +86,24 @@ namespace GK1_1
         private void SubdivideEdge_Click(object sender, RoutedEventArgs e)
         {
             (Edge edge, Shape s) = _markedEdge!.Value;
+            
+            (List<MyPoint> older, List<MyPoint> newer) = s.SubdivideEdge(edge);
+            _bmpHandler.ChangePoints(older, newer);
 
-            s.SubdivideEdge(edge);
         }
 
         private void DelVertex_Click(object sender, RoutedEventArgs e)
         {
             (Vertex v, Shape s) = _markedVertex!.Value;
 
-            s.EraseVertex(v);
+            (List<MyPoint> older, List<MyPoint> newer) = s.EraseVertex(v);
+            _bmpHandler.ChangePoints(older, newer);
+
         }
 
         public void Setup(object sender,RoutedEventArgs args)
         {
-
-            _bmp = new WriteableBitmap((int)grid.Width, (int)grid.Height, 96, 96, PixelFormats.Bgr32, null);
+            _bmpHandler = new BitmapHandler((int)grid.Width, (int)grid.Height,_shapes.ToList());
             DataContext = this;
             grid.MouseLeftButtonDown += ClickedLeftDown;
             grid.MouseLeftButtonUp += ClickedLeftUp;
@@ -111,18 +116,31 @@ namespace GK1_1
             WinPoint p = args.GetPosition(grid);
             Shape? shape;
 
-            _held = HitDetection.CheckPointHit(_shapes.ToList(), (int)p.X, (int)p.Y,out shape);
+            Vertex? v = HitDetection.CheckPointHit(_shapes.ToList(), (int)p.X, (int)p.Y,out shape);
             
+            if(v != null && shape != null)
+            {
+                _held = (v, shape);
+            }
+            else
+            {
+                _held = null;
+            }
+
         }
+
 
         public void MovedMouse(object sender, MouseEventArgs args)
         {
+            
+            WinPoint p = args.GetPosition(grid);
             if (_held == null)
                 return;
-            WinPoint p = args.GetPosition(grid);
+            (Vertex point, Shape shape) = _held.Value;
 
-            _held.X = (int)p.X;
-            _held.Y = (int)p.Y;
+            point.UpdatePosition((int)p.X,(int)p.Y);
+            (List<MyPoint> older, List<MyPoint> newer) = shape.UpdateEdges(new MyPoint(point));
+            _bmpHandler.ChangePoints(older, newer);
         }
         
         public void ClickedLeftUp(object sender, MouseButtonEventArgs args)
@@ -168,51 +186,6 @@ namespace GK1_1
             _rightClickVertexMenu.Placement = System.Windows.Controls.Primitives.PlacementMode.MousePoint;
             _rightClickVertexMenu.IsOpen = true;
         }
-
-
-        /*public void Test(object sender,MouseButtonEventArgs args)
-        {
-
-            for(int i = 0; i < 100; i++)
-            {
-                int column = i;
-                int row = i;
-
-                try
-                {
-                    // Reserve the back buffer for updates.
-                    _bmp.Lock();
-
-                    unsafe
-                    {
-                        // Get a pointer to the back buffer.
-                        IntPtr pBackBuffer = _bmp.BackBuffer;
-
-                        // Find the address of the pixel to draw.
-                        pBackBuffer += row * _bmp.BackBufferStride;
-                        pBackBuffer += 50 * 4;
-
-                        // Compute the pixel's color.
-                        int color_data = 255 << 16; // R
-                        color_data |= 128 << 8;   // G
-                        color_data |= 255 << 0;   // B
-
-                        // Assign the color data to the pixel.
-                        *((int*)pBackBuffer) = color_data;
-                    }
-
-                    // Specify the area of the bitmap that changed.
-                    _bmp.AddDirtyRect(new Int32Rect(50, row, 1, 1));
-                }
-                finally
-                {
-                    // Release the back buffer and make it available for display.
-                    _bmp.Unlock();
-                }
-            }
-       
-
-        }*/
 
     }
 }

@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 
 namespace GK1_1.Components
 {
+    
     public struct Point
     {
         public int x;
@@ -19,7 +20,7 @@ namespace GK1_1.Components
         public Point(Vertex v)
         {
             x = v.X;
-            y= v.Y;
+            y = v.Y;
         }
     }
 }
