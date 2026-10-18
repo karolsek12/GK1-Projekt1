@@ -13,6 +13,7 @@ using System.Windows.Navigation;
 using GK1_1.Components;
 using MyPoint = GK1_1.Components.Point;
 using WinPoint = System.Windows.Point;
+using MyVector = GK1_1.Components.Vector;
 
 namespace GK1_1
 {
@@ -29,6 +30,7 @@ namespace GK1_1
         private (Vertex,Shape)? _held;
         private (Vertex,Shape)? _markedVertex;
         private (Edge, Shape)? _markedEdge;
+        private (MyPoint,Shape)? _movingShape;
         private ViewModel _viewModel;
 
         private ContextMenu _rightClickVertexMenu;
@@ -61,9 +63,10 @@ namespace GK1_1
 
         public MainWindow()
         {
-            InitializeComponent();
+
             _bmpHandler = null!;
             _held = null;
+            _movingShape = null;
             _shapes = new ObservableCollection<Shape>();
             _shapes.Add(ShapeInit.Square(new Vertex(50, 50), 50));
 
@@ -77,10 +80,33 @@ namespace GK1_1
             subdivideEdge.Click += SubdivideEdge_Click;
             _rightClickEdgeMenu.Items.Add(subdivideEdge);
 
-            _viewModel = new ViewModel();
+            MenuItem circularEdge = new MenuItem { Header = "Circular Edge" };
+            circularEdge.Click += CircularEdge_Click;
+            _rightClickEdgeMenu.Items.Add(circularEdge);
 
+            MenuItem straightEdge = new MenuItem { Header = "Straight Edge" };
+            straightEdge.Click += StraightEdge_Click;
+            _rightClickEdgeMenu.Items.Add(straightEdge);
+
+            _viewModel = new ViewModel();
+            InitializeComponent();
             Loaded += Setup;
             
+        }
+
+        private void StraightEdge_Click(object sender, RoutedEventArgs e)
+        {
+            (Edge edge, Shape s) = _markedEdge!.Value;
+            (List<MyPoint> older, List<MyPoint> newer) = s.MakeEdgeStraight(edge);
+            _bmpHandler.ChangePoints(older, newer);
+        }
+
+        private void CircularEdge_Click(object sender, RoutedEventArgs e)
+        {
+            (Edge edge, Shape s) = _markedEdge!.Value;
+            (List<MyPoint> older, List<MyPoint> newer) = s.MakeEdgeCircular(edge);
+            _bmpHandler.ChangePoints(older, newer);
+
         }
 
         private void SubdivideEdge_Click(object sender, RoutedEventArgs e)
@@ -113,10 +139,10 @@ namespace GK1_1
 
         public void ClickedLeftDown(object sender, MouseButtonEventArgs args)
         {
-            WinPoint p = args.GetPosition(grid);
+            MyPoint p = new MyPoint(args.GetPosition(grid));
             Shape? shape;
 
-            Vertex? v = HitDetection.CheckPointHit(_shapes.ToList(), (int)p.X, (int)p.Y,out shape);
+            Vertex? v = HitDetection.CheckPointHit(_shapes.ToList(), p.x,p.y,out shape);
             
             if(v != null && shape != null)
             {
@@ -125,6 +151,9 @@ namespace GK1_1
             else
             {
                 _held = null;
+                shape = HitDetection.CheckShapeHit(_shapes.ToList(), p.x, p.y);
+                if (shape != null)
+                    _movingShape = (p,shape);
             }
 
         }
@@ -132,35 +161,49 @@ namespace GK1_1
 
         public void MovedMouse(object sender, MouseEventArgs args)
         {
-            
-            WinPoint p = args.GetPosition(grid);
+            List<MyPoint> older, newer;
+            MyPoint p = new MyPoint(args.GetPosition(grid));
             if (_held == null)
+            {
+                if (_movingShape == null)
+                    return;
+
+                (MyPoint mpoint, Shape moving) = _movingShape.Value;
+
+                moving.MoveAll(new MyVector(p,mpoint));
+                _movingShape = (p,moving);
+
+                (older, newer) = moving.UpdateAllEdges();
+                _bmpHandler.ChangePoints(older, newer);
                 return;
+            }
+                
             (Vertex point, Shape shape) = _held.Value;
 
-            point.UpdatePosition((int)p.X,(int)p.Y);
-            (List<MyPoint> older, List<MyPoint> newer) = shape.UpdateEdges(new MyPoint(point));
+            point.UpdatePosition(p.x,p.y);
+            ( older, newer) = shape.UpdateEdges(new MyPoint(point));
             _bmpHandler.ChangePoints(older, newer);
         }
         
         public void ClickedLeftUp(object sender, MouseButtonEventArgs args)
         {
             _held = null;
+            _movingShape = null;
         }
 
         public void ClickedRightDown(object sender, MouseButtonEventArgs args)
         {
-            WinPoint p = args.GetPosition(grid);
+            MyPoint p = new MyPoint(args.GetPosition(grid));
             Shape? shape;
             MenuItem item;
 
-            Vertex? v = HitDetection.CheckPointHit(_shapes.ToList(), (int)p.X, (int)p.Y,out shape);
+            Vertex? v = HitDetection.CheckPointHit(_shapes.ToList(), p.x,p.y,out shape);
 
             if (v == null|| shape == null)
             {
                 _markedVertex = null;
 
-                Edge? e = HitDetection.CheckEdgeHit(_shapes.ToList(), (int)p.X, (int)p.Y, out shape);
+                Edge? e = HitDetection.CheckEdgeHit(_shapes.ToList(), p.x, p.y, out shape);
 
                 if(e == null || shape == null)
                 {
@@ -170,13 +213,25 @@ namespace GK1_1
 
                 _markedEdge = (e, shape);
 
+                //0 subdivide
+                //1 circular
+                //2 straight
+                item = (MenuItem)_rightClickEdgeMenu.Items[0];
+                item.IsEnabled = e.EdgeType == EdgeType.StraightEdge;
+
+                item = (MenuItem)_rightClickEdgeMenu.Items[1];
+                item.IsEnabled = e.EdgeType == EdgeType.StraightEdge;
+
+                item = (MenuItem)_rightClickEdgeMenu.Items[2];
+                item.IsEnabled = e.EdgeType != EdgeType.StraightEdge;
+
                 _rightClickEdgeMenu.PlacementTarget = this;
                 _rightClickEdgeMenu.Placement = System.Windows.Controls.Primitives.PlacementMode.MousePoint;
                 _rightClickEdgeMenu.IsOpen = true;
 
                 return;
             }
-                
+             
 
             _markedVertex = (v, shape);
             item = (MenuItem)_rightClickVertexMenu.Items[0];

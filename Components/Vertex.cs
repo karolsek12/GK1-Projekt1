@@ -50,5 +50,11 @@ namespace GK1_1.Components
             Y = y;
         }
 
+        public void Shift(Vector v)
+        {
+            X = _x + v.x;
+            Y = _y + v.y;
+        }
+
     }
 }

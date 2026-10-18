@@ -13,10 +13,13 @@ namespace GK1_1.Components
 
         private ObservableCollection<Edge> _edges;
 
+        private ObservableCollection<CircularEdge> _circularEdges;
+
         public Shape(List<Vertex> vertices, List<Edge> edges)
         {
             _vertices = new ObservableCollection<Vertex>(vertices);
             _edges = new ObservableCollection<Edge>(edges);
+            _circularEdges = new ObservableCollection<CircularEdge>();
         }
 
         public ObservableCollection<Edge> Edges
@@ -32,6 +35,14 @@ namespace GK1_1.Components
             get
             {
                 return _vertices;
+            }
+        }
+
+        public ObservableCollection<CircularEdge> CircularEdges
+        {
+            get
+            {
+                return _circularEdges;
             }
         }
 
@@ -73,6 +84,10 @@ namespace GK1_1.Components
             foreach(Edge edge in toConnect)
             {
                 _edges.Remove(edge);
+                if(edge.EdgeType == EdgeType.NotStraightEdge)
+                {
+                    _circularEdges.Remove((CircularEdge)edge);
+                }
             }
             Edge newest = ConnectEdges(toConnect[0], toConnect[1]);
 
@@ -163,6 +178,74 @@ namespace GK1_1.Components
 
             return (older, newer);  
         }
+        public BoundingBox GetBoundingBox()
+        {
+            int xMin = _vertices.Min(v => v.X);
+            int xMax = _vertices.Max(v => v.X);
 
+            int yMin = _vertices.Min(v => v.Y);
+            int yMax = _vertices.Max(v => v.Y);
+
+            return new BoundingBox(new Point(xMin,yMin),new Point(xMax,yMax));
+        }
+
+        public void MoveAll(Vector vector)
+        {
+            foreach(Vertex v in _vertices)
+            {
+                v.Shift(vector);
+            }
+        }
+
+        public (List<Point>, List<Point>) UpdateAllEdges()
+        {
+            List<Point> older = new List<Point>();
+            List<Point> newer = new List<Point>();
+
+            foreach (Edge e in _edges)
+            {
+                (List<Point> o, List<Point> n) = e.GetPoints();
+
+                foreach (Point pp in o)
+                {
+                    older.Add(pp);
+                }
+
+                foreach (Point pp in n)
+                {
+                    newer.Add(pp);
+                }
+            }
+
+            return (older, newer);
+        }
+
+        public (List<Point>, List<Point>) MakeEdgeCircular(Edge edge)
+        {
+            _edges.Remove(edge);
+            CircularEdge circular = new CircularEdge(edge.P1, edge.P2);
+
+            _edges.Add(circular);
+
+            _circularEdges.Add(circular);
+
+            return (edge.Pixels, new List<Point>());
+
+        }
+
+        internal (List<Point> older, List<Point> newer) MakeEdgeStraight(Edge edge)
+        {
+            CircularEdge circular = (CircularEdge) edge;
+            _circularEdges.Remove(circular);
+
+            _edges.Remove(edge);
+
+            Edge straight = new Edge(edge.P1, edge.P2);
+
+            _edges.Add(straight);
+
+            return (new List<Point>(), straight.Pixels);
+
+        }
     }
 }

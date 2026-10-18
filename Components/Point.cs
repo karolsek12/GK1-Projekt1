@@ -22,5 +22,11 @@ namespace GK1_1.Components
             x = v.X;
             y = v.Y;
         }
+
+        public Point(System.Windows.Point p)
+        {
+            x = (int)p.X;
+            y = (int)p.Y;
+        }
     }
 }

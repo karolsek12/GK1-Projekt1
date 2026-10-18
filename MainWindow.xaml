@@ -11,7 +11,21 @@
 
     <Window.Resources>
         <converters:AddValueConverter x:Key="AddValueConverter"/>
-        <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter"/>
+        <converters:PointConverter x:Key="PointConverter"/>
+        <converters:RadiusSizeConverter x:Key="RadiusSizeConverter"/>
+        <converters:BoolToVisibilityConverter x:Key="BoolEdgeTypeConverter"/>
+        <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter" />
+
+        <Style TargetType="ItemsControl">
+            <Style.Triggers>
+                <DataTrigger Binding="{Binding Path=ViewModel.Library}" Value="true">
+                    <Setter Property="Background" Value="Black"></Setter>
+                </DataTrigger>
+                <DataTrigger Binding="{Binding Path=ViewModel.Library}" Value="false">
+                    <Setter Property="Background" Value="Transparent"></Setter>
+                </DataTrigger>
+            </Style.Triggers>
+        </Style>
     </Window.Resources>
     <StackPanel>
 
@@ -23,9 +37,9 @@
         </StackPanel>
         <Grid Width="1000" Height="700" x:Name="grid">
             <Image Source="{Binding BMP}" Visibility="{Binding Path=ViewModel.Bresenham ,
-                    Converter={StaticResource BooleanToVisibilityConverter}}">
+                    Converter={StaticResource BooleanToVisibilityConverter}, ConverterParameter={}}">
             </Image>
-            <ItemsControl Name="canvas" ItemsSource="{Binding Shapes}">
+            <ItemsControl ItemsSource="{Binding Shapes}">
 
                 <ItemsControl.ItemTemplate>
                     <DataTemplate>
@@ -49,11 +63,33 @@
                                             Y1="{Binding P1.Y}"
                                             X2="{Binding P2.X}"
                                             Y2="{Binding P2.Y}"
-                                            Stroke="Black"
-                                            Visibility="{Binding RelativeSource={RelativeSource FindAncestor, 
-AncestorType={x:Type Window}}, Path=ViewModel.Library ,
-                    Converter={StaticResource BooleanToVisibilityConverter}}"
-                                            ></Line>
+                                            Stroke="White">
+                                                <Line.Visibility>
+                                                    <MultiBinding Converter="{StaticResource BoolEdgeTypeConverter}">
+                                                        <Binding RelativeSource="{RelativeSource FindAncestor, 
+AncestorType={x:Type Window}}" Path="ViewModel.Library"></Binding>
+                                                        <Binding Path="EdgeType"></Binding>
+                                                    </MultiBinding>
+                                                </Line.Visibility>
+                                                
+                                                <Line.Style>
+                                                    <Style TargetType="Line">
+                                                        <Style.Triggers>
+                                                            <DataTrigger Binding="{Binding Path=EdgeType}" Value="0">
+                                                                <Setter Property="StrokeDashArray" Value="1,0"></Setter>
+                                                            </DataTrigger>
+
+                                                            <DataTrigger Binding="{Binding Path=EdgeType}" Value="1">
+                                                                <Setter Property="StrokeDashArray" Value="5,5"></Setter>
+                                                                <Setter Property="Visibility" Value="Visible"></Setter>
+                                                            </DataTrigger>
+                                                            
+                                                        </Style.Triggers>
+                                                    
+                                                    </Style>
+                                                </Line.Style>
+                                                
+                                            </Line>
                                         </Grid>
                                     </DataTemplate>
                                 </ItemsControl.ItemTemplate>
@@ -80,11 +116,60 @@ AncestorType={x:Type Window}}, Path=ViewModel.Library ,
 
                                 <ItemsControl.ItemTemplate>
                                     <DataTemplate>
-                                        <Ellipse Height="10" Width="10" Stroke="Black" Fill="White"></Ellipse>
+                                        <Ellipse Height="10" Width="10" Stroke="White" Fill="White"></Ellipse>
                                     </DataTemplate>
                                 </ItemsControl.ItemTemplate>
                             </ItemsControl>
 
+                            <ItemsControl ItemsSource="{Binding CircularEdges}">
+
+
+                                <ItemsControl.ItemsPanel>
+                                    <ItemsPanelTemplate>
+                                        <Canvas/>
+                                    </ItemsPanelTemplate>
+                                </ItemsControl.ItemsPanel>
+
+
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate>
+                                        <Grid>
+                                            <Path Stroke="White" StrokeThickness="1">
+                                                <Path.Data>
+                                                    <PathGeometry>
+                                                        <PathFigure>
+                                                            <PathFigure.StartPoint>
+                                                                <MultiBinding Converter="{StaticResource PointConverter}">
+                                                                    <Binding Path="P1.X"/>
+                                                                    <Binding Path="P1.Y"/>
+                                                                </MultiBinding>
+                                                            </PathFigure.StartPoint>
+                                                            <ArcSegment 
+                            SweepDirection="Clockwise"
+                            IsLargeArc="False" >
+                                                                <ArcSegment.Point>
+                                                                    <MultiBinding Converter="{StaticResource PointConverter}">
+                                                                        <Binding Path="P2.X"/>
+                                                                        <Binding Path="P2.Y"/>
+                                                                    </MultiBinding>
+                                                                </ArcSegment.Point>
+                                                                <ArcSegment.Size>
+                                                                    <MultiBinding Converter="{StaticResource RadiusSizeConverter}">
+                                                                        <Binding Path="P1"/>
+                                                                        <Binding Path="P2"/>
+                                                                    </MultiBinding>
+                                                                </ArcSegment.Size>
+                                                                
+                                                            </ArcSegment>
+
+                                                        </PathFigure>
+                                                    </PathGeometry>
+                                                </Path.Data>
+                                            </Path>
+                                        </Grid>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
 
                         </Grid>
                     </DataTemplate>

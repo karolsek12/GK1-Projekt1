@@ -98,5 +98,6 @@ namespace GK1_1
         {
             return new Point(A.x, -A.y);
         }
+
     }
 }

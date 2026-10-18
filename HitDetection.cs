@@ -82,5 +82,19 @@ namespace GK1_1
             return (checkX && checkY);
 
         }
+
+        public static Shape? CheckShapeHit(List<Shape> shapes,int x,int y)
+        {
+            Point p = new Point(x, y);
+            foreach(Shape shape in shapes)
+            {
+                BoundingBox bb = shape.GetBoundingBox();
+
+                if(bb.IsInside(p))
+                    return shape;
+            }
+
+            return null;
+        }
     }
 }
