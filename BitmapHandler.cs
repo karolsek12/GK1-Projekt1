@@ -88,6 +88,9 @@ namespace GK1_1
 
         private void ColorPixels(HashSet<MyPoint> set)
         {
+            if (set.Count == 0)
+                return;
+
             int left = set.Min(v => v.x);
             int right = set.Max(v => v.x);
             int top = set.Min(v => v.y);

@@ -155,8 +155,10 @@ AncestorType={x:Type Window}}" Path="ViewModel.Library"></Binding>
                                                                 </ArcSegment.Point>
                                                                 <ArcSegment.Size>
                                                                     <MultiBinding Converter="{StaticResource RadiusSizeConverter}">
-                                                                        <Binding Path="P1"/>
-                                                                        <Binding Path="P2"/>
+                                                                        <Binding Path="P1.X"/>
+                                                                        <Binding Path="P1.Y"/>
+                                                                        <Binding Path="P2.X"/>
+                                                                        <Binding Path="P2.Y"/>
                                                                     </MultiBinding>
                                                                 </ArcSegment.Size>
                                                                 

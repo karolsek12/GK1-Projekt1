@@ -15,13 +15,16 @@ namespace GK1_1.Converters
         public object Convert(object[] values, Type targetType, object parameter, CultureInfo culture)
         {
 
-            if((values.Length >= 2 &&
-                values[0] is Vertex p1 &&
-                values[1] is Vertex p2))
+            if((values.Length >= 4 &&
+                values[0] is int x1 &&
+                values[1] is int y1 &&
+                values[2] is int x2 &&
+                values[3] is int y2 
+                ))
             {
-                int diff1 = p1.X - p2.X;
-                int diff2 = p1.Y - p2.Y;
-                double radius = Math.Sqrt(diff1*diff1 + diff2*diff2);
+                int diff1 = x1 - x2;
+                int diff2 = y1 - y2;
+                double radius = Math.Sqrt(diff1*diff1 + diff2*diff2)/2.0;
 
                 return new Size(radius, radius);
             }
