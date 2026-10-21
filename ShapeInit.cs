@@ -5,6 +5,7 @@ using System.Linq.Expressions;
 using System.Text;
 using System.Threading.Tasks;
 using GK1_1.Components;
+using GK1_1.Components.Edges;
 
 namespace GK1_1
 {

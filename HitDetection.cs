@@ -5,6 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using GK1_1.Components;
+using GK1_1.Components.Edges;
 
 namespace GK1_1
 {
@@ -19,7 +20,7 @@ namespace GK1_1
             hitShape = null;
             foreach (Shape shape in shapes)
             {
-                foreach (Vertex vertex in shape.Vertices)
+                foreach (Vertex vertex in shape.Vertices.Union(shape.ControlPoints))
                 {
                     int value = (vertex.X - x) * (vertex.X - x) + (vertex.Y - y) * (vertex.Y - y);
 

@@ -4,6 +4,7 @@ using System.Collections.ObjectModel;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using GK1_1.Components.Edges;
 
 namespace GK1_1.Components
 {
@@ -15,11 +16,20 @@ namespace GK1_1.Components
 
         private ObservableCollection<CircularEdge> _circularEdges;
 
+        private ObservableCollection<BezierEdge> _bezierEdges;
+
+        private ObservableCollection<FakeEdge> _fakeEdges;
+
+        private ObservableCollection<ControlVertex> _controlPoints;
+
         public Shape(List<Vertex> vertices, List<Edge> edges)
         {
             _vertices = new ObservableCollection<Vertex>(vertices);
             _edges = new ObservableCollection<Edge>(edges);
             _circularEdges = new ObservableCollection<CircularEdge>();
+            _bezierEdges = new ObservableCollection<BezierEdge>();
+            _fakeEdges = new ObservableCollection<FakeEdge>();
+            _controlPoints = new ObservableCollection<ControlVertex>();
         }
 
         public ObservableCollection<Edge> Edges
@@ -38,11 +48,35 @@ namespace GK1_1.Components
             }
         }
 
+        public ObservableCollection<ControlVertex> ControlPoints
+        {
+            get
+            {
+                return _controlPoints;
+            }
+        }
+
         public ObservableCollection<CircularEdge> CircularEdges
         {
             get
             {
                 return _circularEdges;
+            }
+        }
+
+        public ObservableCollection<BezierEdge> BezierEdges
+        {
+            get
+            {
+                return _bezierEdges;
+            }
+        }
+
+        public ObservableCollection<FakeEdge> FakeEdges
+        {
+            get
+            {
+                return _fakeEdges;
             }
         }
 
@@ -83,11 +117,8 @@ namespace GK1_1.Components
 
             foreach(Edge edge in toConnect)
             {
-                _edges.Remove(edge);
-                if(edge.EdgeType == EdgeType.NotStraightEdge)
-                {
-                    _circularEdges.Remove((CircularEdge)edge);
-                }
+                edge.VisitRemove(this);
+
             }
             Edge newest = ConnectEdges(toConnect[0], toConnect[1]);
 
@@ -126,7 +157,7 @@ namespace GK1_1.Components
             Edge e1 = new Edge(edge.P1, midPoint);
             Edge e2 = new Edge(edge.P2, midPoint);
 
-            _edges.Remove(edge);
+            edge.VisitRemove(this);
             _edges.Add(e1);
             _edges.Add(e2);
 
@@ -195,6 +226,11 @@ namespace GK1_1.Components
             {
                 v.Shift(vector);
             }
+
+            foreach(ControlVertex c in _controlPoints)
+            {
+                c.Shift(vector);
+            }
         }
 
         public (List<Point>, List<Point>) UpdateAllEdges()
@@ -222,23 +258,40 @@ namespace GK1_1.Components
 
         public (List<Point>, List<Point>) MakeEdgeCircular(Edge edge)
         {
-            _edges.Remove(edge);
+            edge.VisitRemove(this);
             CircularEdge circular = new CircularEdge(edge.P1, edge.P2);
 
-            _edges.Add(circular);
-
             _circularEdges.Add(circular);
+            _edges.Add(circular);
 
             return (edge.Pixels, new List<Point>());
 
         }
 
-        internal (List<Point> older, List<Point> newer) MakeEdgeStraight(Edge edge)
+        public (List<Point> older, List<Point> newer) MakeEdgeBezier(Edge edge)
         {
-            CircularEdge circular = (CircularEdge) edge;
-            _circularEdges.Remove(circular);
+            edge.VisitRemove(this);
+            BezierEdge bezierEdge = new BezierEdge(edge.P1, edge.P2);
 
-            _edges.Remove(edge);
+            _bezierEdges.Add(bezierEdge);
+            _edges.Add(bezierEdge);
+
+            _controlPoints.Add(bezierEdge.V2);
+            _controlPoints.Add(bezierEdge.V1);
+
+            foreach(FakeEdge fake in bezierEdge.GetFakeEdges())
+            {
+                _fakeEdges.Add(fake);
+            }
+
+            return (edge.Pixels, new List<Point>());
+
+        }
+
+        public (List<Point> older, List<Point> newer) MakeEdgeStraight(Edge edge)
+        {
+            edge.VisitRemove(this);
+            RemoveStraight(edge);
 
             Edge straight = new Edge(edge.P1, edge.P2);
 
@@ -246,6 +299,37 @@ namespace GK1_1.Components
 
             return (new List<Point>(), straight.Pixels);
 
+        }
+
+        public void RemoveStraight(Edge edge)
+        {
+            _edges.Remove(edge);
+        }
+
+        public void RemoveCircular(CircularEdge cEdge)
+        {
+            _circularEdges.Remove(cEdge);
+            _edges.Remove(cEdge);
+        }
+
+        public void RemoveBezier(BezierEdge bEdge)
+        {
+            _bezierEdges.Remove(bEdge);
+            _edges.Remove(bEdge);
+            ControlVertex v1 = bEdge.V1;
+            ControlVertex v2 = bEdge.V2;
+            List<FakeEdge> killList = new List<FakeEdge>();
+            foreach (FakeEdge fEdge in _fakeEdges)
+            {
+                if (fEdge.HasVertex(v1) || fEdge.HasVertex(v2))
+                    killList.Add(fEdge);
+            }
+            foreach (FakeEdge fEdge in killList)
+            {
+                _fakeEdges.Remove(fEdge);
+            }
+            _controlPoints.Remove(v1);
+            _controlPoints.Remove(v2);
         }
     }
 }

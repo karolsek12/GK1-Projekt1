@@ -9,6 +9,7 @@ using System.Windows.Controls;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using GK1_1.Components;
+using GK1_1.Components.Edges;
 using MyPoint = GK1_1.Components.Point;
 
 namespace GK1_1

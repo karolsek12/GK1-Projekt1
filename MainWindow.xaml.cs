@@ -14,6 +14,7 @@ using GK1_1.Components;
 using MyPoint = GK1_1.Components.Point;
 using WinPoint = System.Windows.Point;
 using MyVector = GK1_1.Components.Vector;
+using GK1_1.Components.Edges;
 
 namespace GK1_1
 {
@@ -33,6 +34,7 @@ namespace GK1_1
         private (MyPoint,Shape)? _movingShape;
         private ViewModel _viewModel;
 
+        private MenuCreator _menuCreator;
         private ContextMenu _rightClickVertexMenu;
         private ContextMenu _rightClickEdgeMenu;
 
@@ -69,6 +71,7 @@ namespace GK1_1
             _movingShape = null;
             _shapes = new ObservableCollection<Shape>();
             _shapes.Add(ShapeInit.Square(new Vertex(50, 50), 50));
+            _menuCreator = new MenuCreator();
 
             _rightClickVertexMenu = new ContextMenu();
             MenuItem delVertex = new MenuItem { Header = "Delete Vertex" };
@@ -80,19 +83,25 @@ namespace GK1_1
             subdivideEdge.Click += SubdivideEdge_Click;
             _rightClickEdgeMenu.Items.Add(subdivideEdge);
 
+            MenuItem straightEdge = new MenuItem { Header = "Straight Edge" };
+            straightEdge.Click += StraightEdge_Click;
+            _rightClickEdgeMenu.Items.Add(straightEdge);
+
             MenuItem circularEdge = new MenuItem { Header = "Circular Edge" };
             circularEdge.Click += CircularEdge_Click;
             _rightClickEdgeMenu.Items.Add(circularEdge);
 
-            MenuItem straightEdge = new MenuItem { Header = "Straight Edge" };
-            straightEdge.Click += StraightEdge_Click;
-            _rightClickEdgeMenu.Items.Add(straightEdge);
+            MenuItem bezierEdge = new MenuItem { Header = "Bezier Edge" };
+            bezierEdge.Click += BezierEdge_Click; 
+            _rightClickEdgeMenu.Items.Add(bezierEdge);
 
             _viewModel = new ViewModel();
             InitializeComponent();
             Loaded += Setup;
             
         }
+
+
 
         private void StraightEdge_Click(object sender, RoutedEventArgs e)
         {
@@ -107,6 +116,13 @@ namespace GK1_1
             (List<MyPoint> older, List<MyPoint> newer) = s.MakeEdgeCircular(edge);
             _bmpHandler.ChangePoints(older, newer);
 
+        }
+
+        private void BezierEdge_Click(object sender, RoutedEventArgs e)
+        {
+            (Edge edge, Shape s) = _markedEdge!.Value;
+            (List<MyPoint> older, List<MyPoint> newer) = s.MakeEdgeBezier(edge);
+            _bmpHandler.ChangePoints(older, newer);
         }
 
         private void SubdivideEdge_Click(object sender, RoutedEventArgs e)
@@ -214,16 +230,15 @@ namespace GK1_1
                 _markedEdge = (e, shape);
 
                 //0 subdivide
-                //1 circular
-                //2 straight
-                item = (MenuItem)_rightClickEdgeMenu.Items[0];
-                item.IsEnabled = e.EdgeType == EdgeType.StraightEdge;
+                //1 straight
+                //2 circular
+                //3 bezier
+                bool[] isEnabled = _menuCreator.GetEdgeMenuEnabled(e);
 
-                item = (MenuItem)_rightClickEdgeMenu.Items[1];
-                item.IsEnabled = e.EdgeType == EdgeType.StraightEdge;
-
-                item = (MenuItem)_rightClickEdgeMenu.Items[2];
-                item.IsEnabled = e.EdgeType != EdgeType.StraightEdge;
+                for(int i = 0; i < isEnabled.Length; i++)
+                {
+                    ((MenuItem)_rightClickEdgeMenu.Items[i]).IsEnabled = isEnabled[i];
+                }
 
                 _rightClickEdgeMenu.PlacementTarget = this;
                 _rightClickEdgeMenu.Placement = System.Windows.Controls.Primitives.PlacementMode.MousePoint;

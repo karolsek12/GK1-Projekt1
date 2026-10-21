@@ -68,18 +68,18 @@
                                                     <MultiBinding Converter="{StaticResource BoolEdgeTypeConverter}">
                                                         <Binding RelativeSource="{RelativeSource FindAncestor, 
 AncestorType={x:Type Window}}" Path="ViewModel.Library"></Binding>
-                                                        <Binding Path="EdgeType"></Binding>
+                                                        <Binding></Binding>
                                                     </MultiBinding>
                                                 </Line.Visibility>
                                                 
                                                 <Line.Style>
                                                     <Style TargetType="Line">
                                                         <Style.Triggers>
-                                                            <DataTrigger Binding="{Binding Path=EdgeType}" Value="0">
+                                                            <DataTrigger Binding="{Binding Path=IsVisible}" Value="false">
                                                                 <Setter Property="StrokeDashArray" Value="1,0"></Setter>
                                                             </DataTrigger>
 
-                                                            <DataTrigger Binding="{Binding Path=EdgeType}" Value="1">
+                                                            <DataTrigger Binding="{Binding Path=IsVisible}" Value="true">
                                                                 <Setter Property="StrokeDashArray" Value="5,5"></Setter>
                                                                 <Setter Property="Visibility" Value="Visible"></Setter>
                                                             </DataTrigger>
@@ -117,6 +117,32 @@ AncestorType={x:Type Window}}" Path="ViewModel.Library"></Binding>
                                 <ItemsControl.ItemTemplate>
                                     <DataTemplate>
                                         <Ellipse Height="10" Width="10" Stroke="White" Fill="White"></Ellipse>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+
+                            <ItemsControl ItemsSource="{Binding ControlPoints}">
+
+
+                                <ItemsControl.ItemsPanel>
+                                    <ItemsPanelTemplate>
+                                        <Canvas/>
+                                    </ItemsPanelTemplate>
+                                </ItemsControl.ItemsPanel>
+
+
+                                <ItemsControl.ItemContainerStyle>
+                                    <Style TargetType="ContentPresenter">
+                                        <Setter Property="Canvas.Left" Value="{Binding Path=X, Converter={StaticResource AddValueConverter},
+ConverterParameter=-5}" />
+                                        <Setter Property="Canvas.Top" Value="{Binding Path=Y, Converter={StaticResource AddValueConverter},
+ConverterParameter=-5}" />
+                                    </Style>
+                                </ItemsControl.ItemContainerStyle>
+
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate>
+                                        <Ellipse Height="10" Width="10" Stroke="White" Fill="Black"></Ellipse>
                                     </DataTemplate>
                                 </ItemsControl.ItemTemplate>
                             </ItemsControl>
@@ -168,6 +194,67 @@ AncestorType={x:Type Window}}" Path="ViewModel.Library"></Binding>
                                                     </PathGeometry>
                                                 </Path.Data>
                                             </Path>
+                                        </Grid>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+
+                            <ItemsControl ItemsSource="{Binding BezierEdges}">
+
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate>
+                                        <ItemsControl ItemsSource="{Binding MidLines}">
+
+                                            <ItemsControl.ItemsPanel>
+                                                <ItemsPanelTemplate>
+                                                    <Canvas/>
+                                                </ItemsPanelTemplate>
+                                            </ItemsControl.ItemsPanel>
+
+
+                                            <ItemsControl.ItemTemplate>
+                                                <DataTemplate>
+                                                    <Grid>
+                                                        <Line 
+                                            X1="{Binding P1.X}" 
+                                            Y1="{Binding P1.Y}"
+                                            X2="{Binding P2.X}"
+                                            Y2="{Binding P2.Y}"
+                                            Stroke="White">
+
+                                                        </Line>
+                                                    </Grid>
+                                                </DataTemplate>
+                                            </ItemsControl.ItemTemplate>
+
+                                        </ItemsControl>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                                
+                                
+                            </ItemsControl>
+
+
+                            <ItemsControl ItemsSource="{Binding FakeEdges}">
+
+
+                                <ItemsControl.ItemsPanel>
+                                    <ItemsPanelTemplate>
+                                        <Canvas/>
+                                    </ItemsPanelTemplate>
+                                </ItemsControl.ItemsPanel>
+
+
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate>
+                                        <Grid>
+                                            <Line 
+                                            X1="{Binding P1.X}" 
+                                            Y1="{Binding P1.Y}"
+                                            X2="{Binding P2.X}"
+                                            Y2="{Binding P2.Y}"
+                                            Stroke="White" StrokeDashArray="5,5">
+                                            </Line>
                                         </Grid>
                                     </DataTemplate>
                                 </ItemsControl.ItemTemplate>

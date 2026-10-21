@@ -7,14 +7,8 @@ using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace GK1_1.Components
+namespace GK1_1.Components.Edges
 {
-    public enum EdgeType
-    {
-        StraightEdge,
-        NotStraightEdge
-    }
-
 
     public class Edge : SuperNotifyChanged
     {
@@ -22,7 +16,6 @@ namespace GK1_1.Components
         protected Vertex _p1;
         protected Vertex _p2;
         protected List<Point> _pixels;
-        protected EdgeType _edgeType;
 
         public Vertex P1
         {
@@ -56,20 +49,12 @@ namespace GK1_1.Components
             }
         }
 
-        public EdgeType EdgeType
-        {
-            get
-            {
-                return _edgeType;
-            }
-        }
 
         public Edge(Vertex p1, Vertex p2)
         {
             _p1 = p1;
             _p2 = p2;
             _pixels = Rasterization.Bresenham(new Point(P1), new Point(P2));
-            _edgeType = EdgeType.StraightEdge;
         }
 
         public virtual bool CheckHit(int x, int y)
@@ -88,8 +73,6 @@ namespace GK1_1.Components
             return false;
         }
 
-
-
         public virtual (List<Point>,List<Point>) GetPoints()
         {
             List<Point> older = new List<Point>();
@@ -103,5 +86,32 @@ namespace GK1_1.Components
             return (older, _pixels);
         }
 
+        public virtual bool IsAlwaysVisible()
+        {
+            return false;
+        }
+        
+        public bool IsVisible
+        {
+            get
+            {
+                return IsAlwaysVisible();
+            }
+        }
+
+        public bool HasVertex(Vertex v)
+        {
+            return P1 == v || P2 == v;
+        }
+
+        public virtual void VisitRemove(Shape s)
+        {
+            s.RemoveStraight(this);
+        }
+
+        public virtual void VisitMenu(MenuCreator mc)
+        {
+            mc.AcceptStraight(this);
+        }
     }
 }
