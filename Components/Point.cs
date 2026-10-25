@@ -29,6 +29,12 @@ namespace GK1_1.Components
             y += v.y;
         }
 
+        public void Shift(ExactVector v)
+        {
+            x += v.x;
+            y += v.y;
+        }
+
         public static ExactPoint operator +(ExactPoint a, ExactPoint b)
         {
             return new ExactPoint(a.x + b.x, a.y + b.y);

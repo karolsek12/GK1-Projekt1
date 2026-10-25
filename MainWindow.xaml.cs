@@ -1,5 +1,6 @@
 ﻿using System.Collections.ObjectModel;
 using System.Diagnostics;
+using System.Diagnostics.Metrics;
 using System.Drawing;
 using System.Text;
 using System.Windows;
@@ -11,10 +12,10 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using GK1_1.Components;
-using MyPoint = GK1_1.Components.Point;
-using WinPoint = System.Windows.Point;
-using MyVector = GK1_1.Components.Vector;
 using GK1_1.Components.Edges;
+using MyPoint = GK1_1.Components.Point;
+using MyVector = GK1_1.Components.Vector;
+using WinPoint = System.Windows.Point;
 
 namespace GK1_1
 {
@@ -74,11 +75,27 @@ namespace GK1_1
             _menuCreator = new MenuCreator();
 
             _rightClickVertexMenu = new ContextMenu();
+
             MenuItem delVertex = new MenuItem { Header = "Delete Vertex" };
             delVertex.Click += DelVertex_Click;
             _rightClickVertexMenu.Items.Add(delVertex);
 
+            MenuItem G0Vertex = new MenuItem { Header = "G0" };
+            G0Vertex.Click += G0Vertex_Click;
+            _rightClickVertexMenu.Items.Add(G0Vertex);
+
+            MenuItem G1Vertex = new MenuItem { Header = "G1" };
+            G1Vertex.Click += G1Vertex_Click;
+            _rightClickVertexMenu.Items.Add(G1Vertex);
+
+            MenuItem C1Vertex = new MenuItem { Header = "C1" };
+            C1Vertex.Click += C1Vertex_Click;
+            _rightClickVertexMenu.Items.Add(C1Vertex);
+
+
+
             _rightClickEdgeMenu = new ContextMenu();
+
             MenuItem subdivideEdge = new MenuItem { Header = "Subdivide Edge" };
             subdivideEdge.Click += SubdivideEdge_Click;
             _rightClickEdgeMenu.Items.Add(subdivideEdge);
@@ -101,7 +118,32 @@ namespace GK1_1
             
         }
 
+        private void SetContinuity(Continuity c)
+        {
+            (Vertex v, Shape s) = _markedVertex!.Value;
+            List<MyPoint> older, newer;
 
+            v.Continuity = c;
+
+            s.MoveVertex(v, v.X,v.Y,true);
+            (older, newer) = s.UpdateEdges(new MyPoint(v));
+            _bmpHandler.ChangePoints(older, newer);
+        }
+
+        private void C1Vertex_Click(object sender, RoutedEventArgs e)
+        {
+            SetContinuity(Continuity.C1);
+        }
+
+        private void G1Vertex_Click(object sender, RoutedEventArgs e)
+        {
+            SetContinuity(Continuity.G1);
+        }
+
+        private void G0Vertex_Click(object sender, RoutedEventArgs e)
+        {
+            SetContinuity(Continuity.G0);
+        }
 
         private void StraightEdge_Click(object sender, RoutedEventArgs e)
         {
@@ -196,8 +238,8 @@ namespace GK1_1
                 
             (Vertex point, Shape shape) = _held.Value;
 
-            point.UpdatePosition(p.x,p.y);
-            ( older, newer) = shape.UpdateEdges(new MyPoint(point));
+            shape.MoveVertex(point, p.x, p.y);
+            (older, newer) = shape.UpdateEdges(new MyPoint(point));
             _bmpHandler.ChangePoints(older, newer);
         }
         
@@ -211,7 +253,6 @@ namespace GK1_1
         {
             MyPoint p = new MyPoint(args.GetPosition(grid));
             Shape? shape;
-            MenuItem item;
 
             Vertex? v = HitDetection.CheckPointHit(_shapes.ToList(), p.x,p.y,out shape);
 
@@ -249,8 +290,14 @@ namespace GK1_1
              
 
             _markedVertex = (v, shape);
-            item = (MenuItem)_rightClickVertexMenu.Items[0];
-            item.IsEnabled = shape.Vertices.Count > 3;
+
+            bool[] isEnabledVertex = _menuCreator.GetVertexMenuEnabled(v,shape);
+
+            for (int i = 0; i < isEnabledVertex.Length; i++)
+            {
+                ((MenuItem)_rightClickVertexMenu.Items[i]).IsEnabled = isEnabledVertex[i];
+            }
+
 
             _rightClickVertexMenu.PlacementTarget = this;
             _rightClickVertexMenu.Placement = System.Windows.Controls.Primitives.PlacementMode.MousePoint;

@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Windows.Media;
+using GK1_1.Components;
 using GK1_1.Components.Edges;
 
 namespace GK1_1
@@ -11,8 +13,12 @@ namespace GK1_1
     {
         private static int EdgeMenuSize = 4;
         private bool[] _isEnabled;
+
+        private static int VertexMenuSize = 4;
+        private bool[] _isVertexEnabled;
         public MenuCreator() {
             _isEnabled = new bool[EdgeMenuSize];
+            _isVertexEnabled = new bool[VertexMenuSize];
         }
 
         public bool[] GetEdgeMenuEnabled(Edge e)
@@ -23,6 +29,79 @@ namespace GK1_1
             //3 bezier
             e.VisitMenu(this);
             return _isEnabled;
+        }
+
+        public bool[] GetVertexMenuEnabled(Vertex v, Shape s)
+        {
+            //0 delete
+            //1 G0
+            //2 G1
+            //3 C1
+
+            if (v.Continuity == Continuity.NotSet)
+                return [s.Vertices.Count > 3, false, false, false];
+
+            _isVertexEnabled = [s.Vertices.Count > 3, true, true, true];
+
+            //G0
+            if (v.Continuity == Continuity.G0)
+            {
+                _isVertexEnabled[1] = false;
+            }
+
+            //G1
+            if (v.Continuity == Continuity.G1)
+            {
+                _isVertexEnabled[2] = false;
+            }
+            else
+            {
+                foreach (Edge e in s.CircularEdges)
+                {
+                    if (e.HasVertex(v))
+                    {
+                        if (e.P1.Continuity == Continuity.G1 || e.P2.Continuity == Continuity.G1)
+                        {
+                            _isVertexEnabled[2] = false;
+                            break;
+                        }
+                            
+                    }
+                }
+                if (_isVertexEnabled[2])
+                {
+                    Continuity c = v.Continuity;
+                    v.Continuity = Continuity.G1;
+                    if (!s.CheckCanMove(v))
+                    {
+                        _isVertexEnabled[2] = false;
+                    }
+                    v.Continuity = c;
+                }
+               
+            }
+
+            //C1
+            if(v.Continuity == Continuity.C1)
+            {
+                _isVertexEnabled[3] = false;
+            }
+            else
+            {
+                foreach (Edge e in s.CircularEdges)
+                {
+                    if (e.HasVertex(v))
+                    {
+                        _isVertexEnabled[3] = false;
+                        break;
+                    }
+                }
+            }
+
+            //reset
+
+
+            return _isVertexEnabled;
         }
 
         public void AcceptBezier(BezierEdge edge)
@@ -37,7 +116,21 @@ namespace GK1_1
 
         public void AcceptStraight(Edge edge)
         {
-            _isEnabled = [true, false, true, true];
+            _isEnabled = [true, false, false, true];
+
+            Continuity[] con = [edge.P1.Continuity, edge.P2.Continuity];
+
+            for(int i = 0; i < 2; i++)
+            {
+                if (con[i] == Continuity.C1)
+                    return;
+
+                if (con[i] == Continuity.G1 && con[(i + 1) % 2] == Continuity.G1)
+                    return;
+
+            }
+
+            _isEnabled[2] = true;
         }
     }
 }

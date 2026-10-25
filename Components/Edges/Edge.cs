@@ -99,7 +99,7 @@ namespace GK1_1.Components.Edges
             }
         }
 
-        public bool HasVertex(Vertex v)
+        public virtual bool HasVertex(Vertex v)
         {
             return P1 == v || P2 == v;
         }
@@ -112,6 +112,66 @@ namespace GK1_1.Components.Edges
         public virtual void VisitMenu(MenuCreator mc)
         {
             mc.AcceptStraight(this);
+        }
+
+        public virtual Vector GetTangent(Vertex vertex)
+        {
+            if(P1 == vertex)
+            {
+                return new Vector(new Point(P1), new Point(P2));
+            }
+            else
+            {
+                return new Vector(new Point(P2), new Point(P1));
+            }
+        }
+
+
+        public virtual void SetTangent(Vector tangent, Vertex vertex)
+        {
+            ExactPoint from = new ExactPoint(new Point(vertex));
+            ExactPoint to;
+            if(vertex == P1)
+            {
+                to = new ExactPoint(new Point(P2));
+            }
+            else
+            {
+                to = new ExactPoint(new Point(P1));
+            }
+
+            ExactVector t = new ExactVector(tangent);
+
+            from.Shift(t);
+
+            if(vertex == P1)
+            {
+                P2.X = (int)from.x;
+                P2.Y = (int)from.y;
+            }
+            else
+            {
+                P1.X = (int)from.x;
+                P1.Y = (int)from.y;
+            }
+        }
+
+        public void FixConstraints(Vertex target, Edge prev)
+        {
+
+            Vector tangent;
+
+            if (target == P1)
+            {
+                tangent = prev.GetTangent(P2);
+                SetTangent(tangent, P2);
+            }
+            else
+            {
+                tangent = prev.GetTangent(P1);
+                SetTangent(tangent, P1);
+            }
+
         }
     }
 }

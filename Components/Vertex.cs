@@ -8,11 +8,33 @@ using System.Threading.Tasks;
 
 namespace GK1_1.Components
 {
+    public enum Continuity
+    {
+      G0,
+      G1,
+      C1,
+      NotSet,
+      ControlPoint
+    }
+
     public class Vertex : SuperNotifyChanged
     {
 
         private int _x;
         private int _y;
+        private Continuity _continuity;
+        
+        public Continuity Continuity
+        {
+            get
+            {
+                return _continuity;
+            }
+            set
+            {
+                SetProperty(ref _continuity, value);
+            }
+        }
 
         public int X
         {
@@ -42,6 +64,7 @@ namespace GK1_1.Components
         {
             _x = x;
             _y = y;
+            _continuity = Continuity.NotSet;
         }
 
         public void UpdatePosition(int x, int y)
@@ -55,6 +78,5 @@ namespace GK1_1.Components
             X = _x + v.x;
             Y = _y + v.y;
         }
-
     }
 }

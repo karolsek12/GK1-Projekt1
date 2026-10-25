@@ -15,6 +15,7 @@
         <converters:RadiusSizeConverter x:Key="RadiusSizeConverter"/>
         <converters:BoolToVisibilityConverter x:Key="BoolEdgeTypeConverter"/>
         <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter" />
+        <converters:ContinuityConverter x:Key="ContinuityConverter"/>
 
         <Style TargetType="ItemsControl">
             <Style.Triggers>
@@ -116,10 +117,39 @@ AncestorType={x:Type Window}}" Path="ViewModel.Library"></Binding>
 
                                 <ItemsControl.ItemTemplate>
                                     <DataTemplate>
-                                        <Ellipse Height="10" Width="10" Stroke="White" Fill="White"></Ellipse>
+                                        <Label Foreground="White" Content="{Binding Path=Continuity,Converter={StaticResource ContinuityConverter}}"></Label>
+
                                     </DataTemplate>
                                 </ItemsControl.ItemTemplate>
                             </ItemsControl>
+
+                            <ItemsControl ItemsSource="{Binding Vertices}">
+
+
+                                <ItemsControl.ItemsPanel>
+                                    <ItemsPanelTemplate>
+                                        <Canvas/>
+                                    </ItemsPanelTemplate>
+                                </ItemsControl.ItemsPanel>
+
+
+                                <ItemsControl.ItemContainerStyle>
+                                    <Style TargetType="ContentPresenter">
+                                        <Setter Property="Canvas.Left" Value="{Binding Path=X, Converter={StaticResource AddValueConverter},
+ConverterParameter=-5}" />
+                                        <Setter Property="Canvas.Top" Value="{Binding Path=Y, Converter={StaticResource AddValueConverter},
+ConverterParameter=-5}" />
+                                    </Style>
+                                </ItemsControl.ItemContainerStyle>
+
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate>
+                                        <Ellipse Height="10" Width="10" Stroke="White" Fill="White"></Ellipse>
+
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+
 
                             <ItemsControl ItemsSource="{Binding ControlPoints}">
 
@@ -143,6 +173,7 @@ ConverterParameter=-5}" />
                                 <ItemsControl.ItemTemplate>
                                     <DataTemplate>
                                         <Ellipse Height="10" Width="10" Stroke="White" Fill="Black"></Ellipse>
+
                                     </DataTemplate>
                                 </ItemsControl.ItemTemplate>
                             </ItemsControl>
@@ -171,8 +202,8 @@ ConverterParameter=-5}" />
                                                                 </MultiBinding>
                                                             </PathFigure.StartPoint>
                                                             <ArcSegment 
-                            SweepDirection="Clockwise"
-                            IsLargeArc="False" >
+                            SweepDirection="{Binding SweepDirection}"
+                            IsLargeArc="{Binding IsLargeArc}" >
                                                                 <ArcSegment.Point>
                                                                     <MultiBinding Converter="{StaticResource PointConverter}">
                                                                         <Binding Path="P2.X"/>
@@ -181,10 +212,8 @@ ConverterParameter=-5}" />
                                                                 </ArcSegment.Point>
                                                                 <ArcSegment.Size>
                                                                     <MultiBinding Converter="{StaticResource RadiusSizeConverter}">
-                                                                        <Binding Path="P1.X"/>
-                                                                        <Binding Path="P1.Y"/>
-                                                                        <Binding Path="P2.X"/>
-                                                                        <Binding Path="P2.Y"/>
+                                                                        <Binding Path="BetweenRadius"/>
+                                                                        <Binding Path="Radius"/>
                                                                     </MultiBinding>
                                                                 </ArcSegment.Size>
                                                                 

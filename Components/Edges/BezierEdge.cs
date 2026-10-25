@@ -88,6 +88,7 @@ namespace GK1_1.Components.Edges
         }
 
 
+
         public BezierEdge(Vertex v0,Vertex v3) : base(v0, v3)
         {
             _pixels = new List<Point>();
@@ -99,7 +100,7 @@ namespace GK1_1.Components.Edges
             V0.PropertyChanged += RecalculatePoints;
             V1.PropertyChanged += RecalculatePoints;
             V2.PropertyChanged += RecalculatePoints;
-            v3.PropertyChanged += RecalculatePoints;
+            V3.PropertyChanged += RecalculatePoints;
 
         }
 
@@ -175,5 +176,60 @@ namespace GK1_1.Components.Edges
         {
             mc.AcceptBezier(this);
         }
+
+        public override void SetTangent(Vector tangent, Vertex vertex)
+        {
+            ExactPoint p = new ExactPoint(0, 0);
+            p.Shift(tangent);
+            p.x /= 3.0;
+            p.y /= 3.0;
+
+            ExactPoint v;
+            if (vertex == V0)
+            {
+                
+                v = new ExactPoint(new Point(V0));
+                
+                p = p + v;
+
+                V1.X = (int)p.x;
+                V1.Y = (int)p.y;
+            }
+            else
+            {
+                v = new ExactPoint(new Point(V3));
+
+                p = p + v;  
+
+                V2.X = (int)p.x;
+                V2.Y = (int)p.y;
+            }
+
+        }
+
+        public override Vector GetTangent(Vertex vertex)
+        {
+            Vector v = new Vector(0, 0);
+            if(vertex == V3)
+            {
+                v = new Vector(new Point(V3) - new Point(V2));
+            }
+            else
+            {
+                v = new Vector(new Point(V0) - new Point(V1));
+            }
+
+
+            v.x *= 3; // TODO disgusting;
+            v.y *= 3;
+
+            return v;
+        }
+
+        public override bool HasVertex(Vertex v)
+        {
+            return V0 == v || V1 == v || V2 == v || V3 == v;
+        }
+
     }
 }

@@ -10,6 +10,7 @@ namespace GK1_1.Components
     {
         public ControlVertex(int x, int y) : base(x, y)
         {
+            Continuity = Continuity.ControlPoint;
         }
     }
 }
