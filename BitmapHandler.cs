@@ -22,10 +22,11 @@ namespace GK1_1
         private int[,] _map;
         private int _width;
         private int _height;
+        private List<MyPoint> _older;
 
         const int BLACK = 0;
         const int WHITE = int.MaxValue;
-
+        
         public WriteableBitmap BMP
         {
             get
@@ -40,11 +41,17 @@ namespace GK1_1
             _map = new int[width, height];
             _width = width;
             _height = height;
+            _older  = new List<MyPoint>();
             foreach (Shape shape in shapes)
             {
                 foreach (Edge e in shape.Edges)
                 {
                     IncrementPoints(e.Pixels);
+
+                    for(int i = 0; i < e.Pixels.Count; i++)
+                    {
+                        _older.Add(e.Pixels[i]);
+                    }
                 }
             }
         }
@@ -62,11 +69,11 @@ namespace GK1_1
             ColorPixels(set);
         }
 
-        public void ChangePoints(List<MyPoint> older, List<MyPoint> newer)
+        public void ChangePoints(List<MyPoint> newer)
         {
             HashSet<MyPoint> set = new HashSet<MyPoint>();
             int x, y;
-            foreach (MyPoint p in older)
+            foreach (MyPoint p in _older)
             {
                 x = int.Max(int.Min(p.x,_width - 1), 0);
                 y = int.Max(int.Min(p.y, _height - 1), 0);
@@ -85,6 +92,9 @@ namespace GK1_1
             }
 
             ColorPixels(set);
+
+            _older = newer;
+
         }
 
         private void ColorPixels(HashSet<MyPoint> set)

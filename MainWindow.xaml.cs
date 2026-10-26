@@ -112,22 +112,46 @@ namespace GK1_1
             bezierEdge.Click += BezierEdge_Click; 
             _rightClickEdgeMenu.Items.Add(bezierEdge);
 
+
+            MenuItem fixEdge = new MenuItem { Header = "Fix Length" };
+            fixEdge.Click += FixEdge_Click;
+            _rightClickEdgeMenu.Items.Add(fixEdge);
+
+            MenuItem unfixEdge = new MenuItem { Header = "Unfix Length" };
+            unfixEdge.Click += UnfixEdge_Click;
+            _rightClickEdgeMenu.Items.Add(unfixEdge);
+
+
             _viewModel = new ViewModel();
             InitializeComponent();
             Loaded += Setup;
             
         }
 
+        private void ResetBitmap()
+        {
+            List<MyPoint> total = new List<MyPoint>();
+            foreach(Shape s in _shapes)
+            {
+                List<MyPoint> toAdd = s.UpdateAllEdges();
+
+                for(int i = 0; i < toAdd.Count; i++)
+                {
+                    total.Add(toAdd[i]);
+                }
+            }
+
+            _bmpHandler.ChangePoints(total);
+        }
+
         private void SetContinuity(Continuity c)
         {
             (Vertex v, Shape s) = _markedVertex!.Value;
-            List<MyPoint> older, newer;
 
             v.Continuity = c;
 
             s.MoveVertex(v, v.X,v.Y,true);
-            (older, newer) = s.UpdateEdges(new MyPoint(v));
-            _bmpHandler.ChangePoints(older, newer);
+            ResetBitmap();
         }
 
         private void C1Vertex_Click(object sender, RoutedEventArgs e)
@@ -145,34 +169,55 @@ namespace GK1_1
             SetContinuity(Continuity.G0);
         }
 
+        private void UnfixEdge_Click(object sender, RoutedEventArgs e)
+        {
+            (Edge edge, Shape s) = _markedEdge!.Value;
+
+            s.UnfixLength(edge);
+        }
+
+        private void FixEdge_Click(object sender, RoutedEventArgs e)
+        {
+            (Edge edge, Shape s) = _markedEdge!.Value;
+            LengthInput inputDialog = new LengthInput(edge.GetLength());
+            if (inputDialog.ShowDialog() == true)
+            {
+                s.FixLength(edge, inputDialog.Value);
+
+                ResetBitmap();
+            }
+
+            
+        }
+
         private void StraightEdge_Click(object sender, RoutedEventArgs e)
         {
             (Edge edge, Shape s) = _markedEdge!.Value;
-            (List<MyPoint> older, List<MyPoint> newer) = s.MakeEdgeStraight(edge);
-            _bmpHandler.ChangePoints(older, newer);
+            s.MakeEdgeStraight(edge);
+            ResetBitmap();
         }
 
         private void CircularEdge_Click(object sender, RoutedEventArgs e)
         {
             (Edge edge, Shape s) = _markedEdge!.Value;
-            (List<MyPoint> older, List<MyPoint> newer) = s.MakeEdgeCircular(edge);
-            _bmpHandler.ChangePoints(older, newer);
+            s.MakeEdgeCircular(edge);
+            ResetBitmap();
 
         }
 
         private void BezierEdge_Click(object sender, RoutedEventArgs e)
         {
             (Edge edge, Shape s) = _markedEdge!.Value;
-            (List<MyPoint> older, List<MyPoint> newer) = s.MakeEdgeBezier(edge);
-            _bmpHandler.ChangePoints(older, newer);
+            s.MakeEdgeBezier(edge);
+            ResetBitmap();
         }
 
         private void SubdivideEdge_Click(object sender, RoutedEventArgs e)
         {
             (Edge edge, Shape s) = _markedEdge!.Value;
             
-            (List<MyPoint> older, List<MyPoint> newer) = s.SubdivideEdge(edge);
-            _bmpHandler.ChangePoints(older, newer);
+            s.SubdivideEdge(edge);
+            ResetBitmap();
 
         }
 
@@ -180,8 +225,8 @@ namespace GK1_1
         {
             (Vertex v, Shape s) = _markedVertex!.Value;
 
-            (List<MyPoint> older, List<MyPoint> newer) = s.EraseVertex(v);
-            _bmpHandler.ChangePoints(older, newer);
+            s.EraseVertex(v);
+            ResetBitmap();
 
         }
 
@@ -231,16 +276,14 @@ namespace GK1_1
                 moving.MoveAll(new MyVector(p,mpoint));
                 _movingShape = (p,moving);
 
-                (older, newer) = moving.UpdateAllEdges();
-                _bmpHandler.ChangePoints(older, newer);
+                ResetBitmap();
                 return;
             }
                 
             (Vertex point, Shape shape) = _held.Value;
 
             shape.MoveVertex(point, p.x, p.y);
-            (older, newer) = shape.UpdateEdges(new MyPoint(point));
-            _bmpHandler.ChangePoints(older, newer);
+            ResetBitmap();
         }
         
         public void ClickedLeftUp(object sender, MouseButtonEventArgs args)

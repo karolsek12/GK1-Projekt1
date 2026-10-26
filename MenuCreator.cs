@@ -11,7 +11,7 @@ namespace GK1_1
 {
     public class MenuCreator
     {
-        private static int EdgeMenuSize = 4;
+        private static int EdgeMenuSize = 6;
         private bool[] _isEnabled;
 
         private static int VertexMenuSize = 4;
@@ -27,6 +27,7 @@ namespace GK1_1
             //1 straight
             //2 circular
             //3 bezier
+            //4 fix Length
             e.VisitMenu(this);
             return _isEnabled;
         }
@@ -96,6 +97,16 @@ namespace GK1_1
                         break;
                     }
                 }
+
+                foreach(Edge e in s.Edges)
+                {
+                    if (e.HasVertex(v) && e.FixedLength != null)
+                    {
+                        _isVertexEnabled[3] = false;
+                        break;
+                    }
+                }
+
             }
 
             //reset
@@ -106,31 +117,48 @@ namespace GK1_1
 
         public void AcceptBezier(BezierEdge edge)
         {
-            _isEnabled = [false, true, false, false];
+            _isEnabled = [false, true, false, false,false,false];
         }
 
         public void AcceptCircular(CircularEdge edge)
         {
-            _isEnabled = [false, true, false, false];
+            _isEnabled = [false, true, false, false,false,false];
         }
 
         public void AcceptStraight(Edge edge)
         {
-            _isEnabled = [true, false, false, true];
+            _isEnabled = [true, false, true, true,true,true];
+
+            if(edge.FixedLength != null)
+            {
+                _isEnabled[4] = false;
+            }
+
+            if(edge.FixedLength == null)
+            {
+                _isEnabled[5] = false;
+
+            }
 
             Continuity[] con = [edge.P1.Continuity, edge.P2.Continuity];
 
             for(int i = 0; i < 2; i++)
             {
                 if (con[i] == Continuity.C1)
+                {
+                    _isEnabled[4] = false;
+                    _isEnabled[2] = false;
                     return;
+                }
+                   
 
                 if (con[i] == Continuity.G1 && con[(i + 1) % 2] == Continuity.G1)
-                    return;
+                {
+                    _isEnabled[2] = false;
+                }
 
             }
 
-            _isEnabled[2] = true;
         }
     }
 }

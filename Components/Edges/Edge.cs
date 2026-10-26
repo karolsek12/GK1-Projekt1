@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Configuration;
 using System.Drawing;
 using System.Linq;
 using System.Runtime.CompilerServices;
@@ -10,12 +11,29 @@ using System.Threading.Tasks;
 namespace GK1_1.Components.Edges
 {
 
+
     public class Edge : SuperNotifyChanged
     {
 
         protected Vertex _p1;
         protected Vertex _p2;
         protected List<Point> _pixels;
+
+        protected int? _fixedLength;
+        protected Edge? _perpendicular;
+
+
+        public int? FixedLength
+        {
+            get
+            {
+                return _fixedLength;
+            }
+            set
+            {
+                SetProperty(ref _fixedLength, value);
+            }
+        }
 
         public Vertex P1
         {
@@ -55,6 +73,8 @@ namespace GK1_1.Components.Edges
             _p1 = p1;
             _p2 = p2;
             _pixels = Rasterization.Bresenham(new Point(P1), new Point(P2));
+            _fixedLength = null;
+            _perpendicular = null;
         }
 
         public virtual bool CheckHit(int x, int y)
@@ -142,6 +162,13 @@ namespace GK1_1.Components.Edges
 
             ExactVector t = new ExactVector(tangent);
 
+            if(_fixedLength != null)
+            {
+                t = t.GetNormalised();
+                t.x *= (double)_fixedLength;
+                t.y *= (double)_fixedLength;
+            }
+
             from.Shift(t);
 
             if(vertex == P1)
@@ -156,10 +183,24 @@ namespace GK1_1.Components.Edges
             }
         }
 
-        public void FixConstraints(Vertex target, Edge prev)
+        public virtual void FixConstraints(Vertex target, Edge prev, bool continous)
         {
 
             Vector tangent;
+
+            if (prev == this || continous == false)
+            {
+                tangent = GetTangent(target);
+                if (target == P1)
+                {
+                    SetTangent(tangent, P2);
+                }
+                else
+                {
+                    SetTangent(tangent, P1);
+                }
+                return;
+            }
 
             if (target == P1)
             {
@@ -172,6 +213,38 @@ namespace GK1_1.Components.Edges
                 SetTangent(tangent, P1);
             }
 
+        }
+
+        public int GetLength()
+        {
+            return (int)(new ExactVector(new Vector(new Point(P1), new Point(P2))).Length());
+        }
+
+        public void FixLength()
+        {
+            FixedLength = GetLength();
+        }
+
+        public void UnfixLength()
+        {
+            FixedLength = null;
+        }
+
+        public void AlterLength(int value)
+        {
+            Vector tangent = GetTangent(P1);
+            Point origin = new Point(P2);
+
+            ExactVector ev = new ExactVector(tangent);
+            ev = ev.GetNormalised();
+            ev.x *= value;
+            ev.y *= value;
+
+            origin.Shift(new Vector(ev));
+
+            P1.X = origin.X;
+            P1.Y = origin.Y;
+            
         }
     }
 }

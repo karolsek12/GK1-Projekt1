@@ -100,7 +100,7 @@ namespace GK1_1.Components
             return new Edge(e1.P1, e2.P2);
         }
 
-        public (List<Point>, List<Point>) EraseVertex(Vertex vertex)
+        public void EraseVertex(Vertex vertex)
         {
             List<Edge> toConnect = new List<Edge>();
 
@@ -123,28 +123,9 @@ namespace GK1_1.Components
             Edge newest = ConnectEdges(toConnect[0], toConnect[1]);
 
             _edges.Add(newest);
-
-            List<Point> older = new List<Point>();
-            List<Point> newer = new List<Point>();
-
-            foreach (Point p in newest.Pixels)
-            {
-                newer.Add(p);
-            }
-
-            for (int i = 0; i < 2; i++)
-            {
-                foreach (Point p in toConnect[i].Pixels)
-                {
-                    older.Add(p);
-                }
-            }
-
-
-            return (older, newer);
         }
 
-        public (List<Point>, List<Point>) SubdivideEdge(Edge edge)
+        public void SubdivideEdge(Edge edge)
         {
             RemoveContinuity(edge);
 
@@ -165,52 +146,8 @@ namespace GK1_1.Components
 
             _vertices.Add(midPoint);
 
-            List<Point> older = new List<Point>();
-            List<Point> newer = new List<Point>();
-
-            foreach (Point p in e1.Pixels)
-            {
-                newer.Add(p);
-            }
-
-            foreach (Point p in e2.Pixels)
-            {
-                newer.Add(p);
-            }
-
-            foreach (Point p in edge.Pixels)
-            {
-                older.Add(p);
-            }
-
-            return (older, newer);
         }
 
-        public (List<Point>, List<Point>) UpdateEdges(Point p)
-        {
-            List<Point> older = new List<Point>();
-            List<Point> newer = new List<Point>();
-
-            foreach (Edge e in _edges)
-            {
-                if (e.CheckContainsPoint(p))
-                {
-                    (List<Point> o, List<Point> n) = e.GetPoints();
-
-                    foreach (Point pp in o)
-                    {
-                        older.Add(pp);
-                    }
-
-                    foreach (Point pp in n)
-                    {
-                        newer.Add(pp);
-                    }
-                }
-            }
-
-            return (older, newer);
-        }
         public BoundingBox GetBoundingBox()
         {
             int xMin = _vertices.Min(v => v.X);
@@ -245,19 +182,14 @@ namespace GK1_1.Components
             }
         }
 
-        public (List<Point>, List<Point>) UpdateAllEdges()
+        public  List<Point> UpdateAllEdges()
         {
-            List<Point> older = new List<Point>();
             List<Point> newer = new List<Point>();
 
             foreach (Edge e in _edges)
             {
                 (List<Point> o, List<Point> n) = e.GetPoints();
 
-                foreach (Point pp in o)
-                {
-                    older.Add(pp);
-                }
 
                 foreach (Point pp in n)
                 {
@@ -265,10 +197,10 @@ namespace GK1_1.Components
                 }
             }
 
-            return (older, newer);
+            return newer;
         }
 
-        public (List<Point>, List<Point>) MakeEdgeCircular(Edge edge)
+        public void  MakeEdgeCircular(Edge edge)
         {
             edge.VisitRemove(this);
             CircularEdge circular = new CircularEdge(edge.P1, edge.P2);
@@ -278,11 +210,10 @@ namespace GK1_1.Components
 
 
             TrySetG0(circular);
-            return (edge.Pixels, new List<Point>());
 
         }
 
-        public (List<Point> older, List<Point> newer) MakeEdgeBezier(Edge edge)
+        public void MakeEdgeBezier(Edge edge)
         {
             edge.VisitRemove(this);
             BezierEdge bezierEdge = new BezierEdge(edge.P1, edge.P2);
@@ -300,11 +231,10 @@ namespace GK1_1.Components
 
 
             TrySetC1(bezierEdge);
-            return (edge.Pixels, new List<Point>());
 
         }
 
-        public (List<Point> older, List<Point> newer) MakeEdgeStraight(Edge edge)
+        public void MakeEdgeStraight(Edge edge)
         {
             edge.VisitRemove(this);
             _edges.Remove(edge);
@@ -312,8 +242,6 @@ namespace GK1_1.Components
             Edge straight = new Edge(edge.P1, edge.P2);
 
             _edges.Add(straight);
-
-            return (new List<Point>(), straight.Pixels);
 
         }
 
@@ -404,7 +332,17 @@ namespace GK1_1.Components
 
                 if (vertices[i].Continuity == Continuity.NotSet)
                 {
+                    
+
                     vertices[i].Continuity = Continuity.C1;
+                    foreach (Edge e in Edges)
+                    {
+                        if (e.HasVertex(vertices[i]) && e.FixedLength != null)
+                        {
+                            vertices[i].Continuity = Continuity.G1;
+                            break;
+                        }
+                    }
                 }
                     
 
@@ -460,6 +398,7 @@ namespace GK1_1.Components
         private void UpdateVertex(Vertex curr,Graph g,Vertex? prev = null)
         {
             List<Vertex> neigh = g.GetNeighbors(curr);
+            bool continous = (curr.Continuity == Continuity.G1 || curr.Continuity == Continuity.C1);
 
             foreach(Vertex v in neigh)
             {
@@ -468,8 +407,13 @@ namespace GK1_1.Components
                 Edge e = FindEdge(v, curr);
                 if (prev != null)
                 {
-                    e.FixConstraints(v,FindEdge(curr, prev));
+                    e.FixConstraints(v,FindEdge(curr, prev),continous);
                 }
+                else
+                {
+                    e.FixConstraints(v, e,continous);
+                }
+
                 UpdateVertex(v, g, curr);
 
             }
@@ -493,7 +437,13 @@ namespace GK1_1.Components
                 }
             }
 
-            
+            foreach (Edge e in _edges)
+            {
+                if (e.FixedLength != null)
+                {
+                    g.AddEdge(e.P1, e.P2);
+                }
+            }
 
 
             return g;
@@ -528,7 +478,7 @@ namespace GK1_1.Components
             }
 
 
-            if (g.CheckCycle(point))
+            if (g.CheckCycle(point) && !fakeMove)
             {
                 MoveAll(new Vector(new Point(x, y), new Point(realPoint)));
                 return;
@@ -538,11 +488,8 @@ namespace GK1_1.Components
                 realPoint.UpdatePosition(x, y);
 
             
-            if (point.Continuity == Continuity.NotSet || point.Continuity == Continuity.G0)
-            {
-                UpdateVertex(point, g);
-            }
-            else if(realPoint.Continuity == Continuity.ControlPoint)
+
+            if(realPoint.Continuity == Continuity.ControlPoint)
             {
                 foreach (BezierEdge edge in BezierEdges)
                 {
@@ -559,6 +506,9 @@ namespace GK1_1.Components
                     }
 
                 }
+            }else if (point.Continuity == Continuity.NotSet || point.Continuity == Continuity.G0)
+            {
+                    UpdateVertex(point, g);
             }
             else
             {
@@ -579,6 +529,31 @@ namespace GK1_1.Components
                 }
             }  
     
+        }
+
+        public void FixLength(Edge edge, int value)
+        {
+            int prev = edge.GetLength();
+            RemoveContinuity(edge);
+            edge.AlterLength(value);
+            edge.FixLength();
+            if (CheckCanMove(edge.P1))
+            {
+                MoveVertex(edge.P1, 0, 0, true);
+            }
+            else
+            {
+                edge.UnfixLength();
+                edge.AlterLength(prev);
+                edge.FixLength();
+            }
+
+            
+        }
+
+        public void UnfixLength(Edge edge)
+        {
+            edge.UnfixLength();
         }
     }
 }

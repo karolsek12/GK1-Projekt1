@@ -157,7 +157,7 @@ namespace GK1_1.Components.Edges
             IsLargeArc = cosb >= 0;
             Radius = BetweenRadius / sinb;
 
-            //CONSUMATION IS CORRECT
+            //CONSUMPTION IS CORRECT
         }
 
         public override Vector GetTangent(Vertex vertex)
@@ -181,7 +181,7 @@ namespace GK1_1.Components.Edges
 
             }
 
-            return new Vector(rv);
+            return new Vector(rv); //doesnt work sometimes
 
         }
         public void Freeze()
@@ -192,6 +192,21 @@ namespace GK1_1.Components.Edges
         public void Unfreeze()
         {
             _freeze = false;
+        }
+
+        public override void FixConstraints(Vertex target, Edge prev, bool continous)
+        {
+            Vector tangent;
+            if (target == P1)
+            {
+                tangent = prev.GetTangent(P2);
+                SetTangent(tangent, P2);
+            }
+            else
+            {
+                tangent = prev.GetTangent(P1);
+                SetTangent(tangent, P1);
+            }
         }
  
     }

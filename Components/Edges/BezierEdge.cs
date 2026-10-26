@@ -231,5 +231,20 @@ namespace GK1_1.Components.Edges
             return V0 == v || V1 == v || V2 == v || V3 == v;
         }
 
+        public override void FixConstraints(Vertex target, Edge prev, bool continous)
+        {
+            Vector tangent;
+            if (target == P1)
+            {
+                tangent = prev.GetTangent(P2);
+                SetTangent(tangent, P2);
+            }
+            else
+            {
+                tangent = prev.GetTangent(P1);
+                SetTangent(tangent, P1);
+            }
+        }
+
     }
 }
