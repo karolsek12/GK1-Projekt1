@@ -38,7 +38,8 @@ namespace GK1_1
         private MenuCreator _menuCreator;
         private ContextMenu _rightClickVertexMenu;
         private ContextMenu _rightClickEdgeMenu;
-
+        private int _perpendicularIndex;
+        private (Edge,Shape)? _perpendicularEdge;
 
         public WriteableBitmap BMP
         {
@@ -72,7 +73,14 @@ namespace GK1_1
             _movingShape = null;
             _shapes = new ObservableCollection<Shape>();
             _shapes.Add(ShapeInit.Square(new Vertex(50, 50), 50));
+            ShapeInit.PerpendicularSquare(_shapes[0]);
+
+            _shapes.Add(ShapeInit.Square(new Vertex(400, 50), 75));
+            ShapeInit.BezierFixedSquare(_shapes[1]);
+
+
             _menuCreator = new MenuCreator();
+            _perpendicularIndex = 1;
 
             _rightClickVertexMenu = new ContextMenu();
 
@@ -112,7 +120,6 @@ namespace GK1_1
             bezierEdge.Click += BezierEdge_Click; 
             _rightClickEdgeMenu.Items.Add(bezierEdge);
 
-
             MenuItem fixEdge = new MenuItem { Header = "Fix Length" };
             fixEdge.Click += FixEdge_Click;
             _rightClickEdgeMenu.Items.Add(fixEdge);
@@ -121,12 +128,18 @@ namespace GK1_1
             unfixEdge.Click += UnfixEdge_Click;
             _rightClickEdgeMenu.Items.Add(unfixEdge);
 
+            MenuItem perpendicularEdge = new MenuItem { Header = "Set Perpendicular" };
+            perpendicularEdge.Click += PerpendicularEdge_Click;
+            _rightClickEdgeMenu.Items.Add(perpendicularEdge);
+
 
             _viewModel = new ViewModel();
             InitializeComponent();
             Loaded += Setup;
             
         }
+
+
 
         private void ResetBitmap()
         {
@@ -142,6 +155,70 @@ namespace GK1_1
             }
 
             _bmpHandler.ChangePoints(total);
+        }
+
+        private void PerpendicularEdge_Click(object sender, RoutedEventArgs e)
+        {
+            (Edge edge, Shape s) = _markedEdge!.Value;
+
+            if (edge.Perpendicular != null)
+            {
+                edge.CleanupPerpendicular();
+                return;
+            }
+
+            if(_perpendicularEdge == null)
+            {
+                edge.Index = _perpendicularIndex++;
+                _perpendicularEdge = (edge, s);
+                return;
+            }
+            else
+            {
+                (Edge pe, Shape se) = _perpendicularEdge.Value;
+                if (s != se)
+                {
+                    pe.Index = null;
+                    edge.Index = _perpendicularIndex++;
+                    _perpendicularEdge = (edge, s);
+                    return;
+                }
+                else
+                {
+                    if (!se.Edges.Contains(pe) )
+                    {
+                        edge.Index = _perpendicularIndex++;
+                        _perpendicularEdge = (edge, s);
+                        return;
+                    }
+                    else if(pe != edge){
+                        edge.Index = pe.Index;
+                        edge.Perpendicular = pe;
+                        pe.Perpendicular = edge;
+                        _perpendicularEdge = null;
+                        if (!s.CheckCanMove(edge))
+                        {
+                            edge.CleanupPerpendicular();
+                            string messageBoxText = "Adding this constraint would cause 'constraint loops'";
+                            string caption = "Illegal constraint";
+                            MessageBoxButton button = MessageBoxButton.OK;
+                            MessageBoxImage icon = MessageBoxImage.Warning;
+                            MessageBoxResult result;
+                            result = MessageBox.Show(messageBoxText, caption, button, icon, MessageBoxResult.Yes);
+                        }
+                        else
+                        {
+                            s.MoveVertex(edge.P1, 0, 0, true);
+                            ResetBitmap();
+                        }
+                            
+                    }
+                }
+            }
+
+
+            
+
         }
 
         private void SetContinuity(Continuity c)
@@ -264,7 +341,6 @@ namespace GK1_1
 
         public void MovedMouse(object sender, MouseEventArgs args)
         {
-            List<MyPoint> older, newer;
             MyPoint p = new MyPoint(args.GetPosition(grid));
             if (_held == null)
             {
@@ -345,6 +421,13 @@ namespace GK1_1
             _rightClickVertexMenu.PlacementTarget = this;
             _rightClickVertexMenu.Placement = System.Windows.Controls.Primitives.PlacementMode.MousePoint;
             _rightClickVertexMenu.IsOpen = true;
+        }
+
+        private void Button_Click(object sender, RoutedEventArgs e)
+        {
+            Documentation doc = new Documentation();
+
+            doc.ShowDialog();
         }
 
     }

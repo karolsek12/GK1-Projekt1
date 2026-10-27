@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
+using System.Net;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Media;
@@ -157,11 +158,11 @@ namespace GK1_1.Components.Edges
             IsLargeArc = cosb >= 0;
             Radius = BetweenRadius / sinb;
 
-            //CONSUMPTION IS CORRECT
         }
 
         public override Vector GetTangent(Vertex vertex)
         {
+            
             double cosa = BetweenRadius / Radius;
             double a = Math.Acos(cosa);
 
@@ -169,7 +170,7 @@ namespace GK1_1.Components.Edges
             half = 0.5 * half;
             ExactVector ev = new ExactVector(half,new ExactPoint(new Point(vertex)));
             ExactVector rv;
-            rv = ev.GetRotated(Math.PI/2 - a); // TODO: fix diffrent rotation angles
+            rv = ev.GetRotated(Math.PI/2 - a);
 
             if (SweepDirection == SweepDirection.Clockwise)
             {
@@ -180,8 +181,19 @@ namespace GK1_1.Components.Edges
                 }
 
             }
+            else
+            {
+                if(SweepDirection == SweepDirection.Counterclockwise)
+                {
+                    if(vertex == P2)
+                    {
+                        rv.x *= -1;
+                        rv.y *= -1;
+                    }
+                }
+            }
 
-            return new Vector(rv); //doesnt work sometimes
+                return new Vector(rv); //doesnt work sometimes
 
         }
         public void Freeze()
@@ -194,19 +206,10 @@ namespace GK1_1.Components.Edges
             _freeze = false;
         }
 
-        public override void FixConstraints(Vertex target, Edge prev, bool continous)
+        public override void FixConstraints(Edge from, Vertex to)
         {
-            Vector tangent;
-            if (target == P1)
-            {
-                tangent = prev.GetTangent(P2);
-                SetTangent(tangent, P2);
-            }
-            else
-            {
-                tangent = prev.GetTangent(P1);
-                SetTangent(tangent, P1);
-            }
+            Vector tangent = from.GetTangent(to);
+            SetTangent(tangent, to);
         }
  
     }

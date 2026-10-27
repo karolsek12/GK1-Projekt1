@@ -30,5 +30,23 @@ namespace GK1_1
             return new Shape(Vertices, Edges);
         }
 
+        public static void PerpendicularSquare(Shape s)
+        {
+            s.Edges[1].Index = 0;
+            s.Edges[1].Perpendicular = s.Edges[3];
+            s.Edges[3].Perpendicular = s.Edges[1];
+            s.Edges[3].Index = 0;
+
+            s.MoveVertex(s.Vertices[0], 0, 0, true);
+        }
+
+        public static void BezierFixedSquare(Shape s)
+        {
+            s.MakeEdgeBezier(s.Edges[0]);
+            s.FixLength(s.Edges[1], 50);
+
+            s.MoveVertex(s.Vertices[0], 0, 0, true);
+        }
+
     }
 }

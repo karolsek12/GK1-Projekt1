@@ -247,6 +247,7 @@ namespace GK1_1.Components
 
         public void RemoveStraight(Edge edge)
         {
+            edge.CleanupPerpendicular();
             _edges.Remove(edge);
         }
 
@@ -395,35 +396,90 @@ namespace GK1_1.Components
 
             return null!;
         }
-        private void UpdateVertex(Vertex curr,Graph g,Vertex? prev = null)
+
+        private Edge LocateOtherEdge(Vertex v, Edge wrong)
         {
-            List<Vertex> neigh = g.GetNeighbors(curr);
-            bool continous = (curr.Continuity == Continuity.G1 || curr.Continuity == Continuity.C1);
-
-            foreach(Vertex v in neigh)
+            foreach (Edge e in Edges)
             {
-                if(v == prev) continue;
+                if (e.HasVertex(v) && e != wrong)
+                    return e;
+            }
 
-                Edge e = FindEdge(v, curr);
-                if (prev != null)
+           return wrong;
+        }
+
+        private void UpdateVertex(Container curr,Graph g,Container? prev = null)
+        {
+            List<(Container,ConnectionType)> neigh = g.GetNeighbors(curr);
+            
+            foreach((Container c, ConnectionType ct) in neigh)
+            {
+                if (prev == c)
+                    continue;
+
+                if (c.HasVertex())
                 {
-                    e.FixConstraints(v,FindEdge(curr, prev),continous);
+                    Vertex v = c.Vertex!;
+
+                    if (curr.HasVertex() && v.Continuity == Continuity.ControlPoint)
+                    {
+                        Vertex vcurr = curr.Vertex!;
+                        foreach (BezierEdge be in BezierEdges)
+                        {
+                            if (be.HasVertex(v))
+                            {
+                                be.FixConstraints(LocateOtherEdge(vcurr,be), vcurr);
+                            }
+                        }
+
+                    }
+ 
                 }
                 else
                 {
-                    e.FixConstraints(v, e,continous);
+                    Edge e = c.Edge!;
+
+                    if(ct != ConnectionType.Moving)
+                    {
+                        if((ct & ConnectionType.Continuity) == ConnectionType.Continuity)
+                        {
+                            Vertex vcurr = curr.Vertex!;
+                            e.FixConstraints(LocateOtherEdge(vcurr, e), vcurr);
+                        }else if((ct & ConnectionType.FixedSize) == ConnectionType.FixedSize)
+                        {
+                            Vertex vcurr = curr.Vertex!;
+                            e.FixLengthConstraint(vcurr);
+                        }else if(ct == ConnectionType.Perpendicular)
+                        {
+                            Edge ecurr = curr.Edge!;
+                            e.FixPerpendicularConstraint(ecurr);
+                        }
+
+                    }
+
                 }
-
-                UpdateVertex(v, g, curr);
-
+                UpdateVertex(c, g, curr);
             }
+
         }
 
         public Graph CreateConstraintsGraph()
         {
-            Graph g = new Graph(Vertices.ToList(),ControlPoints.ToList());
+            Graph g = new Graph(Vertices.ToList(),ControlPoints.ToList(),Edges.ToList());
 
-            foreach(Vertex v in Vertices)
+            foreach (Vertex v in Vertices)
+            {
+                foreach (Edge e in _edges)
+                {
+                    if (e.HasVertex(v))
+                    {
+                        g.AddEdge(v, e, ConnectionType.Moving, false);
+
+                    }
+                }
+            }
+
+            foreach (Vertex v in Vertices)
             {
                 if(v.Continuity != Continuity.NotSet && v.Continuity != Continuity.G0)
                 {
@@ -431,7 +487,30 @@ namespace GK1_1.Components
                     {
                         if (e.HasVertex(v))
                         {
-                            g.AddEdge(e.P1, e.P2);
+                            if (!_bezierEdges.Contains(e))
+                            {
+                                g.AddEdge(v,e, ConnectionType.Continuity);
+                                if(e.P1 == v)
+                                {
+                                    g.AddEdge(e, e.P2, ConnectionType.Continuity,false);
+                                }
+                                else
+                                {
+                                    g.AddEdge(e, e.P1, ConnectionType.Continuity, false);
+                                }
+                            }
+                            else
+                            {
+                                if(v == e.P1)
+                                {
+                                    g.AddEdge(((BezierEdge)e).V1, v,ConnectionType.Continuity);
+                                }
+                                else
+                                {
+                                    g.AddEdge(((BezierEdge)e).V2,v, ConnectionType.Continuity);
+                                }
+                            }
+                            
                         }
                     }
                 }
@@ -441,12 +520,26 @@ namespace GK1_1.Components
             {
                 if (e.FixedLength != null)
                 {
-                    g.AddEdge(e.P1, e.P2);
+                    g.AddEdge(e,e.P1,ConnectionType.FixedSize);
+                    g.AddEdge(e,e.P2, ConnectionType.FixedSize);
+                }
+
+                if(e.Perpendicular != null)
+                {
+                    g.AddEdge(e, e.Perpendicular, ConnectionType.Perpendicular);
+                    g.AddEdge(e, e.P1, ConnectionType.Perpendicular, false);
+                    g.AddEdge(e, e.P2, ConnectionType.Perpendicular, false);
                 }
             }
 
 
             return g;
+        }
+
+        public bool CheckCanMove(Edge edge)
+        {
+            Graph g = CreateConstraintsGraph();
+            return !g.CheckCycle(edge);
         }
 
         public bool CheckCanMove(Vertex point)
@@ -458,76 +551,19 @@ namespace GK1_1.Components
         public void MoveVertex(Vertex point, int x, int y, bool fakeMove = false)
         {
             Graph g = CreateConstraintsGraph();
-            Vertex realPoint = point;
-
-            if(point.Continuity == Continuity.ControlPoint)
-            {
-                foreach(BezierEdge bEdge in BezierEdges)
-                {
-                    if (bEdge.V1 == point)
-                    {
-                        point = bEdge.V0;
-                        break;
-                    }             
-                    else if (bEdge.V2 == point)
-                    {
-                        point = bEdge.V3;
-                        break;
-                    }   
-                }
-            }
-
 
             if (g.CheckCycle(point) && !fakeMove)
             {
-                MoveAll(new Vector(new Point(x, y), new Point(realPoint)));
+                MoveAll(new Vector(new Point(x, y), new Point(point)));
                 return;
             }
 
-            if(!fakeMove) // TODO: disgusting
-                realPoint.UpdatePosition(x, y);
+            if(!fakeMove)
+                point.UpdatePosition(x, y);
 
-            
 
-            if(realPoint.Continuity == Continuity.ControlPoint)
-            {
-                foreach (BezierEdge edge in BezierEdges)
-                {
-                    if (edge.HasVertex(point))
-                    {
-                        if (edge.P1 == point)
-                        {
-                            UpdateVertex(point, g, edge.P2);
-                        }
-                        else
-                        {
-                            UpdateVertex(point, g, edge.P1);
-                        }
-                    }
 
-                }
-            }else if (point.Continuity == Continuity.NotSet || point.Continuity == Continuity.G0)
-            {
-                    UpdateVertex(point, g);
-            }
-            else
-            {
-                foreach (Edge edge in _edges)
-                {
-                    if (edge.HasVertex(point))
-                    {
-                        if (edge.P1 == point)
-                        {
-                            UpdateVertex(point, g, edge.P2);
-                        }
-                        else
-                        {
-                            UpdateVertex(point, g, edge.P1);
-                        }
-                    }
-
-                }
-            }  
+            UpdateVertex(g.GetContainer(point), g);
     
         }
 

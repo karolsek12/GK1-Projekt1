@@ -36,6 +36,7 @@
             <Label Content="Library" VerticalContentAlignment="Center"></Label>
             <RadioButton IsChecked="{Binding Path=ViewModel.Bresenham, Mode=TwoWay}" GroupName="Drawing"  VerticalContentAlignment="Center"></RadioButton>
             <Label Content="Bresenham" VerticalContentAlignment="Center"></Label>
+            <Button Margin="50,0,0,0" Width="200" Height="25" Click="Button_Click">View Documentation</Button>
         </StackPanel>
         <Grid Width="1000" Height="700" x:Name="grid">
             <Image Source="{Binding BMP}" Visibility="{Binding Path=ViewModel.Bresenham ,
@@ -133,7 +134,10 @@ AncestorType={x:Type Window}}" Path="ViewModel.Library"></Binding>
                                 <ItemsControl.ItemTemplate>
                                     <DataTemplate>
                                         <Grid>
+                                            <StackPanel Orientation="Vertical">
                                             <Label Content="{Binding Path=FixedLength}" Foreground="Red"></Label>
+                                            <Label Content="{Binding Path=Index}" Foreground="Yellow"></Label>
+                                            </StackPanel>
                                         </Grid>
                                     </DataTemplate>
                                 </ItemsControl.ItemTemplate>

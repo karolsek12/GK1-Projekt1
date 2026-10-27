@@ -28,7 +28,9 @@ namespace GK1_1
             //2 circular
             //3 bezier
             //4 fix Length
+            //5 perpendicular
             e.VisitMenu(this);
+
             return _isEnabled;
         }
 
@@ -117,17 +119,24 @@ namespace GK1_1
 
         public void AcceptBezier(BezierEdge edge)
         {
-            _isEnabled = [false, true, false, false,false,false];
+            _isEnabled = [false, true, false, false,false,false,false];
         }
 
         public void AcceptCircular(CircularEdge edge)
         {
-            _isEnabled = [false, true, false, false,false,false];
+            _isEnabled = [false, true, false, false,false,false,false];
         }
 
         public void AcceptStraight(Edge edge)
         {
-            _isEnabled = [true, false, true, true,true,true];
+            _isEnabled = [true, false, true, true,true,true,true];
+
+
+            if(edge.Index != null)
+            {
+                _isEnabled[2] = false;
+                _isEnabled[3] = false;
+            }
 
             if(edge.FixedLength != null)
             {
@@ -136,6 +145,7 @@ namespace GK1_1
 
             if(edge.FixedLength == null)
             {
+
                 _isEnabled[5] = false;
 
             }

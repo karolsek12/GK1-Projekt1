@@ -18,7 +18,7 @@ namespace GK1_1.Converters
                 ))
             {
 
-                return (x1+x2)/2.0;
+                return (x1+x2)/2.0 - 10.0;
             }
 
 

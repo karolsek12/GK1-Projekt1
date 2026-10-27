@@ -19,9 +19,33 @@ namespace GK1_1.Components.Edges
         protected Vertex _p2;
         protected List<Point> _pixels;
 
-        protected int? _fixedLength;
-        protected Edge? _perpendicular;
+        private int? _fixedLength;
+        private Edge? _perpendicular;
+        private int? _perpendicularIndex;
 
+
+        public Edge? Perpendicular
+        {
+            get
+            {
+                return _perpendicular;
+            }
+            set
+            {
+                SetProperty(ref _perpendicular, value);
+            }
+        }
+        public int? Index
+        {
+            get
+            {
+                return _perpendicularIndex;
+            }
+            set
+            {
+                SetProperty(ref _perpendicularIndex, value);
+            }
+        }
 
         public int? FixedLength
         {
@@ -150,16 +174,6 @@ namespace GK1_1.Components.Edges
         public virtual void SetTangent(Vector tangent, Vertex vertex)
         {
             ExactPoint from = new ExactPoint(new Point(vertex));
-            ExactPoint to;
-            if(vertex == P1)
-            {
-                to = new ExactPoint(new Point(P2));
-            }
-            else
-            {
-                to = new ExactPoint(new Point(P1));
-            }
-
             ExactVector t = new ExactVector(tangent);
 
             if(_fixedLength != null)
@@ -183,36 +197,29 @@ namespace GK1_1.Components.Edges
             }
         }
 
-        public virtual void FixConstraints(Vertex target, Edge prev, bool continous)
+        public virtual void FixConstraints(Edge from, Vertex to)
         {
+            Vector tangent = from.GetTangent(to);
+            SetTangent(tangent, to);
 
+        }
+
+        public void FixLengthConstraint(Vertex from)
+        {
             Vector tangent;
-
-            if (prev == this || continous == false)
+            if (from == P1)
             {
-                tangent = GetTangent(target);
-                if (target == P1)
-                {
-                    SetTangent(tangent, P2);
-                }
-                else
-                {
-                    SetTangent(tangent, P1);
-                }
-                return;
-            }
-
-            if (target == P1)
-            {
-                tangent = prev.GetTangent(P2);
-                SetTangent(tangent, P2);
+                tangent = GetTangent(P2);
+                SetTangent(tangent, P1);
             }
             else
             {
-                tangent = prev.GetTangent(P1);
-                SetTangent(tangent, P1);
+                tangent = GetTangent(P1);
+                SetTangent(tangent, P2);
             }
 
+
+             
         }
 
         public int GetLength()
@@ -245,6 +252,31 @@ namespace GK1_1.Components.Edges
             P1.X = origin.X;
             P1.Y = origin.Y;
             
+        }
+
+        public void FixPerpendicularConstraint(Edge from)
+        {
+            Vector tangent = from.GetTangent(from.P1);
+
+            tangent = tangent.GetRotated(Math.PI / 2);
+
+            SetTangent(tangent, P1);
+            
+        }
+
+        public void CleanupPerpendicular()
+        {
+            if(Perpendicular == null)
+            {
+                Index = null;
+                return;
+            }
+
+            Edge friend = Perpendicular!;
+            friend.Index = null;
+            friend.Perpendicular = null;
+            Index = null;
+            Perpendicular = null;
         }
     }
 }

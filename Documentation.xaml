@@ -1,0 +1,147 @@
+﻿<Window x:Class="GK1_1.Documentation"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:GK1_1"
+        mc:Ignorable="d"
+        Title="Documentation" Height="800" Width="800"
+        ResizeMode="NoResize">
+    <Grid>
+        <ScrollViewer>
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="*"></RowDefinition>
+                    <RowDefinition Height="*"></RowDefinition>
+                    <RowDefinition Height="*"></RowDefinition>
+                    <RowDefinition Height="*"></RowDefinition>
+                    
+                </Grid.RowDefinitions>
+
+                <StackPanel Grid.Row="0">
+                    <Label FontSize="25">Instrukcja obsługi</Label>
+                    <Label FontSize="20" Margin="20,0,0,0">Przesuwanie:</Label>
+                    <TextBlock FontSize="15" Margin="40,0,0,0">
+                        Figury można przesuwać poprzez: <LineBreak></LineBreak><LineBreak></LineBreak>
+                        Jednokrotne naciśnięcie któregokolwiek wierzchołka figury lewym przyciskiem  <LineBreak></LineBreak>
+                        myszy, wierzchołek podąża za kursorem użytkownika.  <LineBreak></LineBreak>
+                        Po zwolnieniu przycisku, wierzchołek przestaje śledzić kursor.
+                        <LineBreak></LineBreak><LineBreak></LineBreak>
+                        Jednokrotne naciśnięcie wewnątrz figury, figura wtedy śledzi kursor <LineBreak></LineBreak>
+                        podobnie jak w przypadku wierzchołka (wyżej opisane).
+                        <LineBreak></LineBreak>
+                    </TextBlock>
+                    <Label FontSize="20" Margin="20,0,0,0">Zamiana krawędzi</Label>
+                    <TextBlock FontSize="15" Margin="40,0,0,0">
+                        Jednokrotnie naciskając na prostą krawędż prawym przyciskiem myszy<LineBreak></LineBreak>
+                        wyświetli menu zawierające m.in. opcje "Circular Edge" oraz "Bezier Edge".<LineBreak></LineBreak>
+                        Naciśnięcie opcji "Circular Edge" zamieni prostą krawędz na łuk okręgu.<LineBreak></LineBreak>
+                        Naciśnięcie opcji "Bezier Edge" zamieni prostą krawędz na krzywą Beziera. <LineBreak></LineBreak>
+                        Żeby przywrócić prostą krawędż należy prawym przyciskiem myszy nacisnąc<LineBreak></LineBreak>
+                        na przerywaną linię i wybrać opcję "Straight Edge".<LineBreak></LineBreak>
+                        Czasami możliwość zamiany krawędzi będzie niedostępna. <LineBreak></LineBreak>
+                        Jest to spowodowane ograniczeniami na tej krawędzi. <LineBreak></LineBreak>
+                        Po usunięciu ograniczeń zamiana powinna być dostępna.
+                    </TextBlock>
+                    <Label FontSize="20" Margin="20,0,0,0">Ograniczenia krawędzi</Label>
+                    <TextBlock FontSize="15" Margin="40,0,0,0">
+                        Jednokrotnie naciskając na prostą krawędż prawym przyciskiem myszy<LineBreak></LineBreak>
+                        wyświetli menu zawierające m.in. opcje "Fix Length" oraz "Set Perpendicular".<LineBreak></LineBreak><LineBreak></LineBreak>
+                        Opcja "Fix Length" ustawnia ograniczenie na krawędż wymuszające<LineBreak></LineBreak>
+                        określoną długość. Po naciśnięciu "Fix Length" wyświetli się okno dialogowe <LineBreak></LineBreak>
+                        wymagające wpisania żądanej wartości i następnie naciśnięcie przycisku OK.<LineBreak></LineBreak>
+                        Opcja "Unfix Length" usuwa ograniczenie długości.<LineBreak></LineBreak>
+                        Długość na ograniczonej krawędzi zostanie wyświetlona czerwonym tekstem..<LineBreak></LineBreak><LineBreak></LineBreak>
+                        Opcja "Set Perpendicular" nadaje krawędzi indeks, nadanie innej krawędzi<LineBreak></LineBreak>
+                        tego samego indeksu poprzez także naciśnięcie "Set Perpendicular" wymusi <LineBreak></LineBreak>
+                        prostopadłość tych dwóch krawędzi.<LineBreak></LineBreak>
+                        Prostopadłość można usunąc poprzez ponowne naciśnięcie "Set Perpendicular" <LineBreak></LineBreak>
+                        na jednej z ograniczonym krawędzi.<LineBreak></LineBreak>
+                        Czasami nadanie drugiej krawędzi indeksu zakończy się niepowodzeniem.<LineBreak></LineBreak>
+                        Oznacza to, że nadanie prostopadłości stworzyłoby cykl <LineBreak></LineBreak>
+                        ograniczeń który spowodowałby sprzeczność układu.<LineBreak></LineBreak>
+                        Prostopadłośc może być tylko określona dla krawędzi z tej samej figury.<LineBreak></LineBreak>
+                        Indeks krawędzi ograniczonej zostanie wyświetlony żółtym tekstem.
+                        
+                    </TextBlock>
+
+                    <Label FontSize="20" Margin="20,0,0,0">Ograniczenia Wierzchołków</Label>
+                    <TextBlock FontSize="15" Margin="40,0,0,0">
+    Jednokrotnie naciskając na wierzchołek krawędż prawym przyciskiem myszy<LineBreak></LineBreak>
+    wyświetli menu zawierające opcje ograniczeń wierzchołkowych.<LineBreak></LineBreak>
+                    Opcja "G0" wymusza jedynie ciągłość figury w danym punkcie..<LineBreak></LineBreak>
+                    Opcja "G1" wymusza taki sam kierunek wektora stycznego z obu stron wierzchołka..<LineBreak></LineBreak>
+                    Opcja "C1" wymusza taki sam kierunek oraz długośc wektora stycznego z obu stron wierzchołka..<LineBreak></LineBreak>
+                    Opcje te są dostępne tylko gdy wierzchołek należy do krzywej niebędacej prostą krawędzią. .<LineBreak></LineBreak>
+                    Czasami nadanie wierzchołkowi ograniczenia jest niedostępne. <LineBreak></LineBreak>
+                    Oznacza to, że te ogranicznie spowodowałoby sprzeczność układu.<LineBreak></LineBreak>
+                    </TextBlock>
+                        
+                    <Label FontSize="20" Margin="20,0,0,0">Dodawanie/Usuwanie wierzchołków</Label>
+                    <TextBlock FontSize="15" Margin="40,0,0,0">
+                    Jednokrotnie naciskając na prostą krawędż prawym przyciskiem myszy<LineBreak></LineBreak>
+                    wyświetli menu zawierające m.in. opcje "Subdivide".<LineBreak></LineBreak>
+                    Opcja "Subdivide" dzieli krawędz na dwie, z wierzchołkiem w<LineBreak></LineBreak>
+                    środku oryginalnej krawędzi. <LineBreak></LineBreak> 
+                     <LineBreak></LineBreak>
+                        Jednokrotnie naciskając na wierzchołek prawym przyciskiem myszy<LineBreak></LineBreak>
+wyświetli menu zawierające m.in. opcje "Delete Vertex".<LineBreak></LineBreak>
+                        Opcja "Delete Vertex" usuwa wierzchołek.
+                    </TextBlock>
+
+
+                    <Label FontSize="20" Margin="20,0,0,0">Przyjęte założenia</Label>
+                    <TextBlock FontSize="15" Margin="40,0,0,0">
+                    Krawędż z wymuszeniem długości nie może graniczyć z wierzchołkiem o ograniczeniu C1.<LineBreak></LineBreak>
+                    Łuk okręgu może graniczyć tylko z jednym wierzchołkiem G1, nie może graniczyć z C1.<LineBreak></LineBreak>
+                    Dodanie ograniczeń jest możliwe wtedy kiedy te ograniczenie nie zabuża spójności układu, <LineBreak></LineBreak>
+                    lub nie powoduje, że znalezenie rozwiązania jest bardzo trudne.<LineBreak></LineBreak>
+                    Oznacza, to, że nawet jeśli istnieje rozwiązanie, ale program nie jest go w stanie znależć,<LineBreak></LineBreak>
+                        to nałożenie ograniczenia jest niedozwolone.<LineBreak></LineBreak>
+                    </TextBlock>
+
+                    <Label FontSize="20" Margin="20,0,0,0">Model danych</Label>
+                    <TextBlock FontSize="15" Margin="40,0,0,0">
+                    Program posiada referencję do listy figur.<LineBreak></LineBreak>
+                    Każda z figur posiada listę wierzchołków, krawędzi prostych, <LineBreak></LineBreak>
+                    krzywych beziera, łuków oraz przerywanych linii.<LineBreak></LineBreak>
+                    Program przesyła działania użytkownika do danej figury.<LineBreak></LineBreak>
+                    Figura sama modyfikuje swoje wartości. <LineBreak></LineBreak>
+                    
+                    </TextBlock>
+
+                    <Label FontSize="20" Margin="20,0,0,0">Algorytm Rasteryzacji</Label>
+                    <TextBlock FontSize="15" Margin="40,0,0,0">
+                    Do rasteryzacji krawędzi wykorzystany jest algorytm Bresenhama.<LineBreak></LineBreak>
+                    Rasteryzacja łuków, przerywanych krawędzi oraz odcinków w krzywej Beziera jest <LineBreak></LineBreak>
+                    wykonywane funkcjonalnością WPF Canvas.<LineBreak></LineBreak>
+                    </TextBlock>
+                        
+                    <Label FontSize="20" Margin="20,0,0,0">Algorytm Rysowania Krzywej Beziera</Label>
+                    <TextBlock FontSize="15" Margin="40,0,0,0">
+                    Do rysowania krawędzi Beziera wykorzystywany jest algorytm przyrostowy.<LineBreak></LineBreak>
+                    Algorytm wyznacza kolejne punkty na krzywej Beziera.<LineBreak></LineBreak>
+                    Punkty są łączone w odcinki algorytmem z WPF.<LineBreak></LineBreak>
+                    </TextBlock>
+                        
+                    <Label FontSize="20" Margin="20,0,0,0">Algorytm Obsługi Ograniczeń</Label>
+                    <TextBlock FontSize="15" Margin="40,0,0,0">
+                    Dla każdej figury wyznaczany jest graf relacji. <LineBreak></LineBreak>
+                    Jeśli zmiana danej krawędzi lub wierzchołka, wpływa na inną krawędz lub<LineBreak></LineBreak>
+                    wierzchołek to w grafie istnieje krawędż odpowiadająca tej zależności.<LineBreak></LineBreak>
+                    Jeśli w grafie istnieje cykl, cała figura zmienia położenie zamiast pojedyńczych wierzchołków.<LineBreak></LineBreak>
+                    Przy wymuszeniu ruchu danego wierzchołka przez użytkownika, wierzchołek wysyła<LineBreak></LineBreak>
+                    informacje o zmianie dla wszystkich komponentów z którymi graniczy w grafie.<LineBreak></LineBreak>
+                    Kolejne komponenty aktualizują zmiany które są wymuszone przez ograniczenia, <LineBreak></LineBreak>
+                    następnie także wysyłają informację do kolenych komponentów.<LineBreak></LineBreak>
+                    W taki sposób zwiedzany jest cały graf, a wszystkie komponenty odpowiednio aktualizowane.<LineBreak></LineBreak>
+                        
+                    </TextBlock>
+
+
+
+                </StackPanel>
+            </Grid>
+        </ScrollViewer>
+    </Grid>
+</Window>
