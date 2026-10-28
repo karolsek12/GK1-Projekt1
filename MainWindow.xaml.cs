@@ -132,14 +132,15 @@ namespace GK1_1
             perpendicularEdge.Click += PerpendicularEdge_Click;
             _rightClickEdgeMenu.Items.Add(perpendicularEdge);
 
+            MenuItem deleteEdge = new MenuItem { Header = "Delete/Restore Edge" };
+            deleteEdge.Click += DeleteEdge_Click;
+            _rightClickEdgeMenu.Items.Add(deleteEdge);
 
             _viewModel = new ViewModel();
             InitializeComponent();
             Loaded += Setup;
             
         }
-
-
 
         private void ResetBitmap()
         {
@@ -155,6 +156,23 @@ namespace GK1_1
             }
 
             _bmpHandler.ChangePoints(total);
+        }
+
+        private void DeleteEdge_Click(object sender, RoutedEventArgs e)
+        {
+            (Edge edge, Shape s) = _markedEdge!.Value;
+
+            if (s.HasDeletedEdge())
+            {
+                s.RestoreEdge();
+            }
+            else
+            {
+                s.DeleteEdge(edge);
+
+            }
+            ResetBitmap();
+
         }
 
         private void PerpendicularEdge_Click(object sender, RoutedEventArgs e)

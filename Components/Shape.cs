@@ -22,6 +22,10 @@ namespace GK1_1.Components
 
         private ObservableCollection<ControlVertex> _controlPoints;
 
+        private Edge? _deletedEdge;
+
+        public ObservableCollection<BezierEdge> _bSplineCurve;
+
         public Shape(List<Vertex> vertices, List<Edge> edges)
         {
             _vertices = new ObservableCollection<Vertex>(vertices);
@@ -30,6 +34,8 @@ namespace GK1_1.Components
             _bezierEdges = new ObservableCollection<BezierEdge>();
             _fakeEdges = new ObservableCollection<FakeEdge>();
             _controlPoints = new ObservableCollection<ControlVertex>();
+            _bSplineCurve = new ObservableCollection<BezierEdge>();
+            _deletedEdge = null;
         }
 
         public ObservableCollection<Edge> Edges
@@ -78,6 +84,44 @@ namespace GK1_1.Components
             {
                 return _fakeEdges;
             }
+        }
+
+        public ObservableCollection<BezierEdge> BSpline
+        {
+            get
+            {
+                return _bSplineCurve;
+            }
+        }
+
+        public Edge? DeletedEdge
+        {
+            get
+            {
+                return _deletedEdge;
+            }
+        }
+
+
+
+       public void DeleteEdge(Edge e){
+            RemoveContinuity(e);
+            e.VisitRemove(this);
+            _deletedEdge = e;
+       }
+
+        public bool HasDeletedEdge()
+        {
+            return _deletedEdge != null;
+        }
+
+        public void RestoreEdge()
+        {
+            Edge restored = new Edge(_deletedEdge!.P1, _deletedEdge.P2);
+
+            _deletedEdge = null;
+
+            _edges.Add(restored);
         }
 
         private Edge ConnectEdges(Edge e1, Edge e2)
@@ -338,6 +382,13 @@ namespace GK1_1.Components
                     vertices[i].Continuity = Continuity.C1;
                     foreach (Edge e in Edges)
                     {
+                       
+                        if (e.HasVertex(vertices[i]) && LocateOtherEdge(vertices[i],e) == e)
+                        {
+                            vertices[i].Continuity = Continuity.G0;
+                            break;
+                        }
+
                         if (e.HasVertex(vertices[i]) && e.FixedLength != null)
                         {
                             vertices[i].Continuity = Continuity.G1;
@@ -564,7 +615,7 @@ namespace GK1_1.Components
 
 
             UpdateVertex(g.GetContainer(point), g);
-    
+            RecalcBSpline();
         }
 
         public void FixLength(Edge edge, int value)
@@ -590,6 +641,136 @@ namespace GK1_1.Components
         public void UnfixLength(Edge edge)
         {
             edge.UnfixLength();
+        }
+
+        public Vertex GetOtherVertex(Edge e, Vertex v)
+        {
+            if(e.P1 == v)
+            {
+                return e.P2;
+            }
+            else
+            {
+                return e.P1;
+            }
+        }
+
+        public ExactPoint GetTriple(Edge e, Vertex from)
+        {
+            Vector v = e.GetTangent(from);
+            v.x *= -1;
+            v.y *= -1;
+
+            ExactVector ev = new ExactVector(v);
+
+            ev.x /= 3;
+            ev.y /= 3;
+
+            ExactPoint ep = new ExactPoint(new Point(from));
+
+            ep.Shift(ev);
+
+            return ep;
+        }
+
+        public Vertex GetShared(Edge e1, Edge e2)
+        {
+            if(e1.P1 == e2.P1 || e1.P1 == e2.P2)
+            {
+                return e1.P1;
+            }else 
+            {
+                return e1.P2;
+            }
+        }
+
+        public ExactPoint GetMid(Edge e)
+        {
+            ExactPoint h = new ExactPoint(new Point(e.P1) + new Point(e.P2));
+            h = 0.5 * h;
+
+            return h;
+        }
+        public ExactPoint GetMidTriple(Edge e1, Edge e2)
+        {
+            ExactPoint h1 = new ExactPoint(new Point(e1.P1) + new Point(e1.P2));
+            h1 = 0.5 * h1;
+            ExactPoint h2 = GetTriple(e2, GetShared(e1, e2));
+
+            ExactPoint hh = new ExactPoint(h1.x+h2.x,h1.y+h2.y);
+            hh = 0.5 * hh;
+
+            return hh;
+        }
+
+        public ExactPoint GetMidTripleTriple(Edge e1, Edge e2)
+        {
+            Vertex v = GetShared(e1, e2);
+
+            ExactPoint ev1 = GetTriple(e1, v);
+            ExactPoint ev2 = GetTriple(e2, v);
+
+            ExactPoint h = new ExactPoint(ev1.x + ev2.x, ev1.y+ev2.y);
+            h = 0.5 * h;
+
+            return h;
+        }
+
+        public void RecalcBSpline()
+        {
+            //4 krawedzi
+            _bSplineCurve.Clear();
+
+
+            if(_deletedEdge != null)
+            {
+                if (_edges.Count < 4)
+                    return;
+
+                List<Edge> list = new List<Edge>();
+
+                Vertex v = _deletedEdge.P1;
+                Edge e = LocateOtherEdge(v, _deletedEdge);
+                BezierEdge bedge;
+
+                list.Add(e);
+                while (v != _deletedEdge.P2)
+                {
+                    
+                    v = GetOtherVertex(e, v);
+                    e = LocateOtherEdge(v, e);
+                    list.Add(e);
+                }
+
+
+                bedge = new BezierEdge(_deletedEdge.P1, new Vertex(GetMidTriple(list[1], list[2])));
+
+                bedge.V1 = new ControlVertex(GetOtherVertex(_deletedEdge, _deletedEdge.P1));
+                bedge.V2 = new ControlVertex(new Vertex(GetTriple(list[2], GetShared(list[1], list[2]))));
+
+                _bSplineCurve.Add(bedge);
+
+                bedge = new BezierEdge(_bSplineCurve[0].V3, new Vertex(GetMidTripleTriple(list[2], list[3])));
+                bedge.V1 = new ControlVertex(new Vertex(GetMid(list[1])));
+                bedge.V2 = new ControlVertex(new Vertex(GetTriple(list[3], GetShared(list[2], list[3]))));
+
+                _bSplineCurve.Add(bedge);
+
+                for (int i = 2; i < list.Count-2; i++)
+                {
+                    bedge = new BezierEdge(_bSplineCurve[i - 1].V3, new Vertex(GetMidTripleTriple(list[i + 1], list[i + 2])));
+                    bedge.V1 = new ControlVertex(new Vertex(GetTriple(list[i], GetShared(list[i], list[i + 1]))));
+                    bedge.V2 = new ControlVertex(new Vertex(GetTriple(list[i+2], GetShared(list[i+1], list[i + 2]))));
+                    _bSplineCurve.Add(bedge);
+                }
+
+
+
+            }
+            else
+            {
+
+            }
         }
     }
 }

@@ -311,6 +311,42 @@ ConverterParameter=-5}" />
                                 
                             </ItemsControl>
 
+                            <ItemsControl ItemsSource="{Binding BSpline}">
+
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate>
+                                        <ItemsControl ItemsSource="{Binding MidLines}">
+
+                                            <ItemsControl.ItemsPanel>
+                                                <ItemsPanelTemplate>
+                                                    <Canvas/>
+                                                </ItemsPanelTemplate>
+                                            </ItemsControl.ItemsPanel>
+
+
+                                            <ItemsControl.ItemTemplate>
+                                                <DataTemplate>
+                                                    <Grid>
+                                                        <Line 
+                X1="{Binding P1.X}" 
+                Y1="{Binding P1.Y}"
+                X2="{Binding P2.X}"
+                Y2="{Binding P2.Y}"
+                Stroke="White">
+
+                                                        </Line>
+                                                    </Grid>
+                                                </DataTemplate>
+                                            </ItemsControl.ItemTemplate>
+
+                                        </ItemsControl>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+
+
+                            </ItemsControl>
+
+
 
                             <ItemsControl ItemsSource="{Binding FakeEdges}">
 

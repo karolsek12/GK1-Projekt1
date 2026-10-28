@@ -11,7 +11,7 @@ namespace GK1_1
 {
     public class MenuCreator
     {
-        private static int EdgeMenuSize = 6;
+        private static int EdgeMenuSize = 7;
         private bool[] _isEnabled;
 
         private static int VertexMenuSize = 4;
@@ -46,6 +46,10 @@ namespace GK1_1
 
             _isVertexEnabled = [s.Vertices.Count > 3, true, true, true];
 
+            if (s.HasDeletedEdge()){
+                _isVertexEnabled[0] = false;
+            }
+
             //G0
             if (v.Continuity == Continuity.G0)
             {
@@ -59,6 +63,7 @@ namespace GK1_1
             }
             else
             {
+
                 foreach (Edge e in s.CircularEdges)
                 {
                     if (e.HasVertex(v))
@@ -81,7 +86,14 @@ namespace GK1_1
                     }
                     v.Continuity = c;
                 }
-               
+
+                if (s.HasDeletedEdge())
+                {
+                    if (s.DeletedEdge!.HasVertex(v))
+                    {
+                        _isVertexEnabled[2] = false;
+                    }
+                }
             }
 
             //C1
@@ -109,6 +121,14 @@ namespace GK1_1
                     }
                 }
 
+                if (s.HasDeletedEdge())
+                {
+                    if (s.DeletedEdge!.HasVertex(v))
+                    {
+                        _isVertexEnabled[3] = false;
+                    }
+                }
+
             }
 
             //reset
@@ -119,17 +139,17 @@ namespace GK1_1
 
         public void AcceptBezier(BezierEdge edge)
         {
-            _isEnabled = [false, true, false, false,false,false,false];
+            _isEnabled = [false, true, false, false,false,false,false,true];
         }
 
         public void AcceptCircular(CircularEdge edge)
         {
-            _isEnabled = [false, true, false, false,false,false,false];
+            _isEnabled = [false, true, false, false,false,false,false,true];
         }
 
         public void AcceptStraight(Edge edge)
         {
-            _isEnabled = [true, false, true, true,true,true,true];
+            _isEnabled = [true, false, true, true,true,true,true,true];
 
 
             if(edge.Index != null)

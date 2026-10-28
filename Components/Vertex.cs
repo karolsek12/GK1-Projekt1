@@ -67,6 +67,11 @@ namespace GK1_1.Components
             _continuity = Continuity.NotSet;
         }
 
+        public Vertex(ExactPoint ev) : this((int)ev.x, (int)ev.y)
+        {
+
+        }
+
         public void UpdatePosition(int x, int y)
         {
             X = x;

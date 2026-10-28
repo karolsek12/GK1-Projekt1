@@ -12,5 +12,10 @@ namespace GK1_1.Components
         {
             Continuity = Continuity.ControlPoint;
         }
+
+        public ControlVertex(Vertex v) : this(v.X, v.Y)
+        {
+
+        }
     }
 }
